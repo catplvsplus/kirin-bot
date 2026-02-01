@@ -1,10 +1,11 @@
 import { SlashCommandBuilder, SlashCommandModule, type SlashCommand } from 'reciple';
 import KirinClient from '../kirin/KirinClient.js';
 import { inlineCode, InteractionContextType, MessageFlags } from 'discord.js';
-import type { Server } from '@kirinmc/core';
+import { Server } from '@kirinmc/core';
 import { slug } from 'github-slugger';
 import { FolderSelector } from '../utils/_FolderSelector.js';
 import path from 'node:path';
+import { ServerSetup } from '../utils/_ServerSetup.js';
 import { TextDisplay } from '@reciple/jsx';
 
 export class CreateCommand extends SlashCommandModule {
@@ -40,16 +41,17 @@ export class CreateCommand extends SlashCommandModule {
     public async execute(data: SlashCommand.ExecuteData): Promise<void> {
         const { interaction } = data;
 
-        const server: Partial<Server.Data> & { id: string; name: string; type: Server.Type; } = {
+        const serverData: Partial<Server.Data> & { id: string; name: string; type: Server.Type; persist: boolean; } = {
             id: slug(interaction.options.getString('id', true), false),
             name: interaction.options.getString('name', true),
-            type: interaction.options.getString('type', true) as Server.Type
+            type: interaction.options.getString('type', true) as Server.Type,
+            persist: true
         };
 
-        if (KirinClient.kirin.get(server.id)) {
+        if (KirinClient.kirin.get(serverData.id)) {
             await interaction.reply({
                 flags: MessageFlags.Ephemeral,
-                content: `A server with an id ${inlineCode(server.id)} already exists.`,
+                content: `A server with an id ${inlineCode(serverData.id)} already exists.`,
             });
             return;
         }
@@ -61,14 +63,28 @@ export class CreateCommand extends SlashCommandModule {
             interaction
         });
 
-        const dir = await selectFolder.select({ allowCreate: true });
+        const dir = await selectFolder.start({ allowCreate: true });
         if (!dir) return;
 
-        server.directory = path.relative(path.resolve(KirinClient.kirin.root), dir) || './';
+        serverData.directory = path.relative(path.resolve(KirinClient.kirin.root), dir) || './';
+
+        const setup = new ServerSetup({
+            data: serverData as ServerSetup.Data,
+            interaction
+        });
+
+        if (!await setup.start()) return;
 
         await interaction.editReply({
             components: <>
-                <TextDisplay>📁 {server.directory}</TextDisplay>
+                <TextDisplay>Your server is being created...</TextDisplay>
+            </>
+        });
+
+        await setup.createServer();
+        await interaction.editReply({
+            components: <>
+                <TextDisplay>Your server has been created!</TextDisplay>
             </>
         });
     }

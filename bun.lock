@@ -12,6 +12,7 @@
         "discord.js": "^14.25.1",
         "github-slugger": "^2.0.0",
         "reciple": "^10.0.24",
+        "zod": "^4.3.6",
       },
       "devDependencies": {
         "@types/node": "^25.0.9",
