@@ -61,12 +61,14 @@ export class CreateCommand extends SlashCommandModule {
             interaction
         });
 
-        const dir = await selectFolder.select();
+        const dir = await selectFolder.select({ allowCreate: true });
+        if (!dir) return;
+
+        server.directory = path.relative(path.resolve(KirinClient.kirin.root), dir) || './';
 
         await interaction.editReply({
             components: <>
-                <TextDisplay># Creating server...</TextDisplay>
-                <TextDisplay>📁 {dir}</TextDisplay>
+                <TextDisplay>📁 {server.directory}</TextDisplay>
             </>
         });
     }

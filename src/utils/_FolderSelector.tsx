@@ -1,6 +1,6 @@
 import { ActionRow, Button, Container, Label, Modal, Section, Separator, TextDisplay, TextInput } from '@reciple/jsx';
 import { ButtonStyle, ComponentType, MessageFlags, TextInputStyle, type InteractionEditReplyOptions, type RepliableInteraction } from 'discord.js';
-import { readdir, stat } from 'node:fs/promises';
+import { mkdir, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 
 export class FolderSelector {
@@ -47,6 +47,25 @@ export class FolderSelector {
                             </Label>
                         </Modal>
                     );
+
+                    const newFolderModal = await interaction.awaitModalSubmit({
+                        time: 1000 * 60 * 5
+                    }).catch(() => null);
+                    if (!newFolderModal) break;
+
+                    const folder = newFolderModal.fields.getTextInputValue('name');
+
+                    if (!FolderSelector.isValidFolderName(folder)) {
+                        await newFolderModal.reply({
+                            content: 'Invalid folder name.',
+                            flags: MessageFlags.Ephemeral
+                        });
+                        break;
+                    }
+
+                    await newFolderModal.deferUpdate();
+                    await this.mkdir(folder);
+                    await interaction.editReply(await this.createMessageData(options));
                     break;
                 default:
                     const [_,index] = id.split(':');
@@ -82,6 +101,13 @@ export class FolderSelector {
 
             this.items.push(item);
         }
+    }
+
+    public async mkdir(name: string): Promise<void> {
+        const fullPath = path.join(this.cwd, name);
+
+        await mkdir(fullPath);
+        await this.chdir(fullPath);
     }
 
     public async createMessageData(options?: FolderSelector.MessageDataOptions): Promise<InteractionEditReplyOptions> {
@@ -134,6 +160,8 @@ export class FolderSelector {
 }
 
 export namespace FolderSelector {
+    const folderNameRegex = /^[^\s^\x00-\x1f\\?*:"";<>|\/.][^\x00-\x1f\\?*:"";<>|\/]*[^\s^\x00-\x1f\\?*:"";<>|\/.]+$/g;
+
     export interface Options {
         cwd: string;
         interaction: RepliableInteraction;
@@ -146,5 +174,9 @@ export namespace FolderSelector {
         title?: string;
         base?: InteractionEditReplyOptions;
         disabled?: boolean;
+    }
+
+    export function isValidFolderName(name: string): boolean {
+        return !!name.length && folderNameRegex.test(name);
     }
 }
