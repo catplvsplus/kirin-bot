@@ -48,10 +48,12 @@ export class FolderSelector {
 
             switch (id) {
                 case 'cancel':
+                    await interaction.deferUpdate();
                     componentCollector.stop();
                     handleConfirm(null);
                     break;
                 case 'confirm':
+                    await interaction.deferUpdate();
                     componentCollector.stop();
                     handleConfirm(this.cwd);
                     break;

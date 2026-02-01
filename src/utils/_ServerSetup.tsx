@@ -54,6 +54,7 @@ export class ServerSetup {
                     await interaction.editReply(this.createMessageData());
                     break;
                 case 'cancel':
+                    await interaction.deferUpdate();
                     componentCollector.stop();
                     handleConfirm(null);
                     break;
@@ -152,6 +153,7 @@ export class ServerSetup {
                             {this.data.persist ? 'Disable' : 'Enable'}
                         </Button>
                     </Section>
+                    <TextDisplay>### Ping Interval</TextDisplay>
                     <ActionRow>
                         <StringSelectMenu customId='ping-interval' placeholder='Select Ping Interval' disabled={options?.disabled}>
                             {
