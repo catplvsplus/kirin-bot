@@ -196,7 +196,7 @@ export class ServerSetup {
                 this.data.env[key] = ServerSetup.stripQuotes(value);
             }
         } else {
-            this.data.env = env;
+            this.data.env = env || {};
         }
 
         await interaction.deferUpdate();
