@@ -3,8 +3,9 @@ import KirinClient from '../kirin/KirinClient.js';
 import { inlineCode, InteractionContextType, MessageFlags } from 'discord.js';
 import type { Server } from '@kirinmc/core';
 import { slug } from 'github-slugger';
-import { FolderSelector } from '../utiks/_FolderSelector.js';
+import { FolderSelector } from '../utils/_FolderSelector.js';
 import path from 'node:path';
+import { TextDisplay } from '@reciple/jsx';
 
 export class CreateCommand extends SlashCommandModule {
     public data = new SlashCommandBuilder()
@@ -60,7 +61,14 @@ export class CreateCommand extends SlashCommandModule {
             interaction
         });
 
-        await selectFolder.select();
+        const dir = await selectFolder.select();
+
+        await interaction.editReply({
+            components: <>
+                <TextDisplay># Creating server...</TextDisplay>
+                <TextDisplay>📁 {dir}</TextDisplay>
+            </>
+        });
     }
 }
 

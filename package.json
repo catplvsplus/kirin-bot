@@ -10,11 +10,11 @@
   "dependencies": {
     "@kirinmc/core": "^0.0.1",
     "@reciple/core": "^10.0.1",
-    "@reciple/jsx": "^10.0.5",
-    "@reciple/modules": "^10.0.24",
+    "@reciple/jsx": "^10.0.6",
+    "@reciple/modules": "^10.0.25",
     "discord.js": "^14.25.1",
     "github-slugger": "^2.0.0",
-    "reciple": "^10.0.23"
+    "reciple": "^10.0.24"
   },
   "devDependencies": {
     "@types/node": "^25.0.9",
