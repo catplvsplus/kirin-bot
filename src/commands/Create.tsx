@@ -1,12 +1,12 @@
 import { SlashCommandBuilder, SlashCommandModule, type SlashCommand } from 'reciple';
 import KirinClient from '../kirin/KirinClient.js';
-import { inlineCode, InteractionContextType, MessageFlags } from 'discord.js';
+import { Colors, inlineCode, InteractionContextType, MessageFlags } from 'discord.js';
 import { Server } from '@kirinmc/core';
 import { slug } from 'github-slugger';
 import { FolderSelector } from '../utils/_FolderSelector.js';
 import path from 'node:path';
 import { ServerSetup } from '../utils/_ServerSetup.js';
-import { TextDisplay } from '@reciple/jsx';
+import { Container, TextDisplay } from '@reciple/jsx';
 
 export class CreateCommand extends SlashCommandModule {
     public data = new SlashCommandBuilder()
@@ -77,14 +77,30 @@ export class CreateCommand extends SlashCommandModule {
 
         await interaction.editReply({
             components: <>
-                <TextDisplay>Your server is being created...</TextDisplay>
+                <TextDisplay>⏳ Creating server your server.</TextDisplay>
+                <Container accentColor={Colors.Green}>
+                    <TextDisplay>
+                        {`## ${serverData.name}\n`}
+                        {`-# Id: ${inlineCode(serverData.id)}\n`}
+                        {`-# Type: ${inlineCode(serverData.type)}\n`}
+                        {`-# Address: ${inlineCode(serverData.address!)}\n`}
+                    </TextDisplay>
+                </Container>
             </>
         });
 
-        await setup.createServer();
+        const server = await setup.createServer();
         await interaction.editReply({
             components: <>
-                <TextDisplay>Your server has been created!</TextDisplay>
+                <TextDisplay>✅ Your server has been created!</TextDisplay>
+                <Container accentColor={Colors.Green}>
+                    <TextDisplay>
+                        {`## ${server.name}\n`}
+                        {`-# Id: ${inlineCode(server.id)}\n`}
+                        {`-# Type: ${inlineCode(server.type)}\n`}
+                        {`-# Address: ${inlineCode(server.address)}\n`}
+                    </TextDisplay>
+                </Container>
             </>
         });
     }
