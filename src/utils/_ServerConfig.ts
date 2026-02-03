@@ -1,9 +1,19 @@
-import type { PermissionResolvable } from 'discord.js';
+import type { Message, PermissionResolvable, SendableChannels } from 'discord.js';
+import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import { parse, stringify } from 'yaml';
 import z from 'zod';
 
 export class ServerConfig implements ServerConfig.Data {
+    public path: string;
     public data: ServerConfig.Data = {
         permissions: {
+            view: {
+                allowedUsers: [],
+                requiredRoles: [],
+                requiredPermissions: [],
+                mustHaveAll: true
+            },
             start: {
                 allowedUsers: [],
                 requiredRoles: [],
@@ -38,10 +48,94 @@ export class ServerConfig implements ServerConfig.Data {
     get logChannels() {
         return this.data.logChannels;
     }
+
+    constructor(path: string) {
+        this.path = path;
+    }
+
+    public async fetchLogChannels(): Promise<SendableChannels[]> {
+        const logChannels: SendableChannels[] = [];
+
+        for (const data of this.logChannels) {
+            const channel = await useClient().channels.fetch(data.channelId).catch(() => null);
+            if (!channel || !channel.isSendable()) continue;
+
+            logChannels.push(channel);
+        }
+
+        return logChannels;
+    }
+
+    public async fetchStatusMessages(): Promise<Message[]> {
+        const messages: Message[] = [];
+
+        for (const data of this.statusMessages) {
+            const channel = await useClient().channels.fetch(data.channelId).catch(() => null);
+            if (!channel || !channel.isTextBased()) continue;
+
+            const message = await channel.messages.fetch(data.messageId).catch(() => null);
+            if (!message) continue;
+
+            messages.push(message);
+        }
+
+        return messages;
+    }
+
+    public async hasPermission(options: ServerConfig.PermissionCheckOptions): Promise<boolean> {
+        const { allowedUsers, requiredRoles, requiredPermissions, mustHaveAll } = this.permissions[options.action];
+
+        const guild = options.guildId ? await useClient().guilds.fetch(options.guildId).catch(() => null) : null;
+        if (!guild && options.guildId) return false;
+
+        const channel = options.channelId ? await useClient().channels.fetch(options.channelId).catch(() => null) : null;
+        if (!channel && options.channelId) return false;
+
+        const user = await useClient().users.fetch(options.userId).catch(() => null);
+        if (!user) return false;
+
+        const member = guild ? await guild.members.fetch(user).catch(() => null) : null;
+        if (!member && guild) return false;
+
+        const inAllowedUsers = allowedUsers.includes(user.id);
+        const hasRequiredRoles = requiredRoles.every(roleId => member?.roles.cache.has(roleId));
+        const hasRequiredPermissions = channel
+            ? !channel.isDMBased() && !!channel.permissionsFor(user)?.has(requiredPermissions)
+            : !!member?.permissions.has(requiredPermissions);
+
+        if (mustHaveAll) {
+            return inAllowedUsers && hasRequiredRoles && hasRequiredPermissions;
+        } else {
+            return inAllowedUsers || hasRequiredRoles || hasRequiredPermissions;
+        }
+    }
+
+    public async save(): Promise<void> {
+        await mkdir(path.dirname(this.path), { recursive: true });
+        await writeFile(this.path, stringify(this.data));
+    }
+
+    public async read(): Promise<void> {
+        const exists = await stat(this.path).then(s => s.isFile()).catch(() => false);
+
+        if (!exists) {
+            await this.save();
+            return;
+        }
+
+        this.data = parse(await readFile(this.path, 'utf-8'));
+    }
 }
 
 export namespace ServerConfig {
-    export type ActionType = 'start'|'stop'|'restart';
+    export interface PermissionCheckOptions {
+        action: ActionType;
+        userId: string;
+        guildId?: string;
+        channelId?: string;
+    }
+
+    export type ActionType = 'view'|'start'|'stop'|'restart';
 
     export interface Data {
         permissions: Record<ActionType, ActionPermissionsData>;
@@ -59,7 +153,7 @@ export namespace ServerConfig {
     export interface StatusMessageData {
         guildId: string;
         channelId: string;
-        message: string;
+        messageId: string;
         allowedActions: ActionType[];
     }
 
@@ -71,7 +165,7 @@ export namespace ServerConfig {
 
     export const schema = z.object({
         permissions: z.record(
-            z.enum(['start', 'stop', 'restart']),
+            z.enum(['view', 'start', 'stop', 'restart']),
             z.object({
                 allowedUsers: z.string().array(),
                 requiredRoles: z.string().array(),
