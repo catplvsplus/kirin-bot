@@ -6,7 +6,7 @@ import { slug } from 'github-slugger';
 import { FolderSelector } from '../utils/_FolderSelector.js';
 import path from 'node:path';
 import { ServerSetup } from '../utils/_ServerSetup.js';
-import { Container, TextDisplay } from '@reciple/jsx';
+import { Container, Heading, LineBreak, SubText, TextDisplay } from '@reciple/jsx';
 
 export class CreateCommand extends SlashCommandModule {
     public data = new SlashCommandBuilder()
@@ -80,10 +80,13 @@ export class CreateCommand extends SlashCommandModule {
                 <TextDisplay>⏳ Creating server your server.</TextDisplay>
                 <Container accentColor={Colors.Green}>
                     <TextDisplay>
-                        {`## ${serverData.name}\n`}
-                        {`-# Id: ${inlineCode(serverData.id)}\n`}
-                        {`-# Type: ${inlineCode(serverData.type)}\n`}
-                        {`-# Address: ${inlineCode(serverData.address!)}\n`}
+                        <Heading level={2}>{serverData.name}</Heading>
+                        <LineBreak/>
+                        <SubText>Id: {inlineCode(serverData.id)}</SubText>
+                        <LineBreak/>
+                        <SubText>Type: {inlineCode(serverData.type)}</SubText>
+                        <LineBreak/>
+                        <SubText>Address: {inlineCode(serverData.address!)}</SubText>
                     </TextDisplay>
                 </Container>
             </>
@@ -95,10 +98,13 @@ export class CreateCommand extends SlashCommandModule {
                 <TextDisplay>✅ Your server has been created!</TextDisplay>
                 <Container accentColor={Colors.Green}>
                     <TextDisplay>
-                        {`## ${server.name}\n`}
-                        {`-# Id: ${inlineCode(server.id)}\n`}
-                        {`-# Type: ${inlineCode(server.type)}\n`}
-                        {`-# Address: ${inlineCode(server.address)}\n`}
+                        <Heading level={2}>{server.name}</Heading>
+                        <LineBreak/>
+                        <SubText>Id: {inlineCode(server.id)}</SubText>
+                        <LineBreak/>
+                        <SubText>Type: {inlineCode(server.type)}</SubText>
+                        <LineBreak/>
+                        <SubText>Address: {inlineCode(server.address)}</SubText>
                     </TextDisplay>
                 </Container>
             </>

@@ -1,4 +1,4 @@
-import { ActionRow, Button, Container, Label, Modal, Section, Separator, StringSelectMenu, StringSelectMenuOption, TextDisplay, TextInput } from '@reciple/jsx';
+import { ActionRow, Button, Container, Heading, Label, Modal, Section, Separator, StringSelectMenu, StringSelectMenuOption, SubText, TextDisplay, TextInput } from '@reciple/jsx';
 import { ButtonStyle, ComponentType, MessageFlags, TextInputStyle, type InteractionEditReplyOptions, type RepliableInteraction } from 'discord.js';
 import { mkdir, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
@@ -150,10 +150,14 @@ export class FolderSelector {
                 <Container>
                     {options?.allowCreate
                         ? <Section>
-                            <TextDisplay>## {options.title ?? 'Select a folder'}</TextDisplay>
+                            <TextDisplay>
+                                <Heading level={2}>{options.title ?? 'Select a folder'}</Heading>
+                            </TextDisplay>
                             <Button style={ButtonStyle.Primary} customId="new-folder" disabled={options.disabled}>New Folder</Button>
                         </Section>
-                        : <TextDisplay>## {options?.title ?? 'Select a folder'}</TextDisplay>
+                        : <TextDisplay>
+                            <Heading level={2}>{options?.title ?? 'Select a folder'}</Heading>
+                        </TextDisplay>
                     }
                     <Separator/>
                     <Section>
@@ -188,7 +192,9 @@ export class FolderSelector {
                     }
                 </Container>
                 <Container>
-                    <TextDisplay>-# {this.cwd}</TextDisplay>
+                    <TextDisplay>
+                        <SubText>{this.cwd}</SubText>
+                    </TextDisplay>
                     <ActionRow>
                         <Button style={ButtonStyle.Danger} customId="cancel" disabled={options?.disabled}>Cancel</Button>
                         <Button style={ButtonStyle.Success} customId="confirm" disabled={options?.disabled}>Select</Button>

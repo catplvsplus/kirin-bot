@@ -1,7 +1,7 @@
 import { SlashCommandBuilder, SlashCommandModule, type SlashCommand } from 'reciple';
 import KirinClient from '../kirin/KirinClient.js';
 import { bold, Colors, MessageFlags } from 'discord.js';
-import { Container, Separator, TextDisplay } from '@reciple/jsx';
+import { Container, Heading, LineBreak, Separator, SubText, TextDisplay } from '@reciple/jsx';
 import type { Server } from '@kirinmc/core';
 
 export class ServersCommand extends SlashCommandModule {
@@ -22,8 +22,9 @@ export class ServersCommand extends SlashCommandModule {
                     accentColor={server.ping.latest?.status === 'online' ? Colors.Green : Colors.DarkButNotBlack}
                 >
                     <TextDisplay>
-                        {`### ${server.name || server.id}\n`}
-                        {`-# ${this.getStatusEmoji(server.status)} ${bold(server.status)}`}
+                        <Heading level={3}>{server.name || server.id}</Heading>
+                        <LineBreak/>
+                        <SubText>{this.getStatusEmoji(server.status)} {bold(server.status)}</SubText>
                     </TextDisplay>
                     {
                         server.ping.latest?.motd
@@ -35,7 +36,7 @@ export class ServersCommand extends SlashCommandModule {
                         : undefined
                     }
                     <TextDisplay>
-                        -# ID: {server.id} | {server.type.slice(0, 1).toUpperCase() + server.type.slice(1)} server
+                        <SubText>ID: {server.id} | {server.type.slice(0, 1).toUpperCase() + server.type.slice(1)} server</SubText>
                     </TextDisplay>
                 </Container>
             ))

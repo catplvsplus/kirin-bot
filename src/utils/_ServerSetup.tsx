@@ -1,5 +1,5 @@
 import { Server } from '@kirinmc/core';
-import { ActionRow, Button, Container, FileUpload, Label, Modal, Section, Separator, StringSelectMenu, StringSelectMenuOption, TextDisplay, TextInput } from '@reciple/jsx';
+import { ActionRow, Button, Container, FileUpload, Heading, Label, LineBreak, Modal, Section, Separator, StringSelectMenu, StringSelectMenuOption, SubText, TextDisplay, TextInput } from '@reciple/jsx';
 import { ButtonStyle, ComponentType, inlineCode, TextInputStyle, type Attachment, type InteractionEditReplyOptions, type ModalBuilder, type ModalSubmitInteraction, type ReadonlyCollection, type RepliableInteraction } from 'discord.js';
 import KirinClient from '../kirin/KirinClient.js';
 import path from 'node:path';
@@ -125,12 +125,15 @@ export class ServerSetup {
             ...options?.base,
             components: <>
                 <Container>
-                    <TextDisplay>## {this.data.name}</TextDisplay>
+                    <TextDisplay>
+                        <Heading level={2}>{this.data.name}</Heading>
+                    </TextDisplay>
                     <Separator/>
                     <Section>
                         <TextDisplay>
-                            {'### Software Setup\n'}
-                            {'-# Configures the server software, start command, address, and env variables of the server.'}
+                            <Heading level={3}>Server Software</Heading>
+                            <LineBreak/>
+                            <SubText>Configures the server software, start command, address, and env variables of the server.</SubText>
                         </TextDisplay>
                         <Button
                             style={isSoftwareConfigured ? ButtonStyle.Secondary : ButtonStyle.Primary}
@@ -142,8 +145,9 @@ export class ServerSetup {
                     </Section>
                     <Section>
                         <TextDisplay>
-                            {'### Persistent Process\n'}
-                            {'-# Persistent process means that the server will be kept running even if the bot went offline.'}
+                            <Heading level={3}>Persistent Process</Heading>
+                            <LineBreak/>
+                            <SubText>Persistent process means that the server will be kept running even if the bot went offline.</SubText>
                         </TextDisplay>
                         <Button
                             style={ButtonStyle.Secondary}
@@ -153,7 +157,9 @@ export class ServerSetup {
                             {this.data.persist ? 'Disable' : 'Enable'}
                         </Button>
                     </Section>
-                    <TextDisplay>### Ping Interval</TextDisplay>
+                    <TextDisplay>
+                        <Heading level={3}>Ping Interval</Heading>
+                    </TextDisplay>
                     <ActionRow>
                         <StringSelectMenu customId='ping-interval' placeholder='Select Ping Interval' disabled={options?.disabled}>
                             {
@@ -167,7 +173,11 @@ export class ServerSetup {
                             }
                         </StringSelectMenu>
                     </ActionRow>
-                    <TextDisplay>-# Ping interval is how often the bot pings the server to check if it's online.</TextDisplay>
+                    <TextDisplay>
+                        <SubText>
+                            Ping interval is how often the bot pings the server to check if it's online.
+                        </SubText>
+                    </TextDisplay>
                     <Separator/>
                     <ActionRow>
                         <Button style={ButtonStyle.Danger} customId='cancel' disabled={options?.disabled}>Cancel</Button>
