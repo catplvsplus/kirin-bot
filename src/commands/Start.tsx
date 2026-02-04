@@ -2,12 +2,13 @@ import { InteractionListenerBuilder, InteractionListenerType, type InteractionLi
 import { SlashCommandBuilder, SlashCommandModule, type SlashCommand } from 'reciple';
 import KirinClient from '../kirin/KirinClient.js';
 import { MessageFlags } from 'discord.js';
+import type { Output, Result } from 'tinyexec';
 
 export class StartCommand extends SlashCommandModule {
     public data = new SlashCommandBuilder()
         .setName('start')
         .setDescription('Start a server.')
-        .addStringOption(id => id
+        .addStringOption(server => server
             .setName('server')
             .setDescription('The target server to start.')
             .setAutocomplete(true)
@@ -25,7 +26,7 @@ export class StartCommand extends SlashCommandModule {
 
                 await interaction.respond(
                     servers
-                        .filter(s => s.status === 'offline' && (!query || s.id === query || s.name?.toLowerCase().includes(query)))
+                        .filter(s => !s.isRunning && (!query || s.id === query || s.name?.toLowerCase().includes(query)))
                         .map(s => ({
                             name: s.name || s.id,
                             value: s.id
@@ -49,9 +50,34 @@ export class StartCommand extends SlashCommandModule {
             return;
         }
 
-        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+        if (server.isRunning) {
+            await interaction.reply({
+                flags: MessageFlags.Ephemeral,
+                content: '❌ Server is already running.'
+            });
+            return;
+        }
+
+        await interaction.reply('⌛ Server is starting...');
+
+        let resolve: (process: Result, reason?: Output|Error) => void = () => null;
+        const promise = new Promise(res => resolve = (process: Result, reason?: Output|Error) => {
+            server.removeListener('processStart', resolve);
+            server.removeListener('processStop', resolve);
+            res(null);
+        });
+
+        server.once('processStart', resolve);
+        server.once('processStop', resolve);
+
         await server.start();
-        await interaction.editReply('✅ Server is starting...');
+        await promise;
+
+        await interaction.editReply({
+            content: server.isRunning
+                ? `✅ Server started successfully.`
+                : `❌ Server failed to start.`
+        }).catch(() => null);
     }
 }
 
