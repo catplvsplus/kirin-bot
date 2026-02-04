@@ -10,7 +10,7 @@ import { ComponentType } from 'discord.js';
 export class LogChannelCommand extends SlashCommandModule {
     public data = new SlashCommandBuilder()
         .setName('log-channel')
-        .setDescription(`Manage a server's log channel.`)
+        .setDescription(`Manage a server's log channels.`)
         .addStringOption(server => server
             .setName('server')
             .setDescription(`The target server.`)
