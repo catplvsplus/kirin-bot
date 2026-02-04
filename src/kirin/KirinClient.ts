@@ -1,5 +1,5 @@
 import { ServerManager, type Server } from '@kirinmc/core';
-import { Collection, type MessageCreateOptions } from 'discord.js';
+import { Collection } from 'discord.js';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { BaseModule } from 'reciple';
@@ -43,21 +43,21 @@ export class KirinClient extends BaseModule {
         this.configurations.set(server.id, config);
         this.logger.log(`Loaded configuration for "${server.name}"`);
 
-        const channels = await config.fetchLogChannels();
+        const broadcast = async (message: string) => {
+            this.logger.log(message);
 
-        const broadcast = async (data: MessageCreateOptions) => {
-            this.logger.log(data.content);
+            const channels = await config.fetchLogChannels();
 
             for (const channel of channels) {
-                await channel.send(data).catch(() => null);
+                await channel.send(message).catch(() => null);
             }
         }
 
-        server.on('processStdout', data => broadcast({ content: data }));
-        server.on('processStderr', data => broadcast({ content: data }));
+        server.on('processStdout', data => broadcast(data));
+        server.on('processStderr', data => broadcast(data));
 
-        server.on('processStart', () => broadcast({ content: `Server "${server.name}" started.` }));
-        server.on('processStop', (data, result) => broadcast({ content: `Server "${server.name}" stopped.\n${result instanceof Error ? result.message : result?.stderr ?? result?.stdout}` }));
+        server.on('processStart', () => broadcast(`Server "${server.name}" started.`));
+        server.on('processStop', (_, result) => broadcast(`Server "${server.name}" stopped.\n${result instanceof Error ? result.message : result?.stderr ?? result?.stdout}`));
     }
 
     public async onServerDelete(server: Server): Promise<void> {

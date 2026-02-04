@@ -57,7 +57,7 @@ export class ServerConfig implements ServerConfig.Data {
         const logChannels: SendableChannels[] = [];
 
         for (const data of this.logChannels) {
-            const channel = await useClient().channels.fetch(data.channelId).catch(() => null);
+            const channel = await useClient().channels.fetch(data.channelId);
             if (!channel || !channel.isSendable()) continue;
 
             logChannels.push(channel);
@@ -70,7 +70,7 @@ export class ServerConfig implements ServerConfig.Data {
         const messages: Message[] = [];
 
         for (const data of this.statusMessages) {
-            const channel = await useClient().channels.fetch(data.channelId).catch(() => null);
+            const channel = await useClient().channels.fetch(data.channelId);
             if (!channel || !channel.isTextBased()) continue;
 
             const message = await channel.messages.fetch(data.messageId).catch(() => null);
@@ -88,7 +88,7 @@ export class ServerConfig implements ServerConfig.Data {
         const guild = options.guildId ? await useClient().guilds.fetch(options.guildId).catch(() => null) : null;
         if (!guild && options.guildId) return false;
 
-        const channel = options.channelId ? await useClient().channels.fetch(options.channelId).catch(() => null) : null;
+        const channel = options.channelId ? await useClient().channels.fetch(options.channelId) : null;
         if (!channel && options.channelId) return false;
 
         const user = await useClient().users.fetch(options.userId).catch(() => null);

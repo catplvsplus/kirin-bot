@@ -30,6 +30,7 @@ export class StopCommand extends SlashCommandModule {
                             name: s.name || s.id,
                             value: s.id
                         }))
+                        .splice(0, 25)
                 )
             })
             .toJSON()
