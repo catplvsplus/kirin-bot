@@ -1,6 +1,6 @@
 import { InteractionListenerBuilder, InteractionListenerType, type InteractionListenerData } from '@reciple/modules';
 import { SlashCommandBuilder, SlashCommandModule, type SlashCommand } from 'reciple';
-import { inlineCode } from 'discord.js';
+import { inlineCode, MessageFlags } from 'discord.js';
 import KirinClient from '../kirin/KirinClient.js';
 
 export class StopCommand extends SlashCommandModule {
@@ -50,7 +50,10 @@ export class StopCommand extends SlashCommandModule {
             return;
         }
 
-        await interaction.reply('⌛ Server is stopping...');
+        await interaction.reply({
+            flags: MessageFlags.Ephemeral,
+            content: '⌛ Server is stopping...'
+        });
 
         const exitCode = await server.stop();
 
