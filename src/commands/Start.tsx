@@ -58,7 +58,10 @@ export class StartCommand extends SlashCommandModule {
             return;
         }
 
-        await interaction.reply('⌛ Server is starting...');
+        await interaction.reply({
+            flags: MessageFlags.Ephemeral,
+            content: '⌛ Server is starting...'
+        });
 
         let resolve: (process: Result, reason?: Output|Error) => void = () => null;
         const promise = new Promise(res => resolve = (process: Result, reason?: Output|Error) => {
