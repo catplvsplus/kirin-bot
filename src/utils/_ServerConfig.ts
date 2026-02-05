@@ -1,4 +1,4 @@
-import { PermissionsBitField, type Message, type PermissionResolvable, type SendableChannels } from 'discord.js';
+import { type Message, type PermissionResolvable, type SendableChannels } from 'discord.js';
 import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { parse, stringify } from 'yaml';
@@ -92,7 +92,7 @@ export class ServerConfig implements ServerConfig.Data {
         const permissions = this.permissions[options.action];
         if (!permissions) return false;
 
-        const { allowedUsers, requiredRoles, requiredPermissions: requiredPermissionResolvable, mustHaveAll } = permissions;
+        const { allowedUsers, requiredRoles, requiredPermissions, mustHaveAll } = permissions;
 
         const guild = options.guildId ? await useClient().guilds.fetch(options.guildId).catch(() => null) : null;
         useLogger().log('Guild:', guild, options.guildId);
@@ -107,18 +107,14 @@ export class ServerConfig implements ServerConfig.Data {
         const member = guild ? await guild.members.fetch(user).catch(() => null) : null;
         if (!member && guild) return false;
 
-        const requiredPermissions = new PermissionsBitField(requiredPermissionResolvable);
-
         const inAllowedUsers = !allowedUsers.length || allowedUsers.includes(user.id);
         const hasRequiredRoles = requiredRoles.every(roleId => member?.roles.cache.has(roleId));
-        const hasRequiredPermissions = !requiredPermissions.toArray().length
+        const hasRequiredPermissions = !requiredPermissions
             || (
                 channel
                     ? !channel.isDMBased() && !!channel.permissionsFor(user)?.has(requiredPermissions)
                     : !!member?.permissions.has(requiredPermissions)
             );
-
-        useLogger().log('Permission check:', { inAllowedUsers, hasRequiredRoles, hasRequiredPermissions, mustHaveAll });
 
         if (mustHaveAll) {
             return inAllowedUsers && hasRequiredRoles && hasRequiredPermissions;
