@@ -180,7 +180,7 @@ export class ServerSetup {
     }
 
     public async handleSetupSoftwareModal(interaction: ModalSubmitInteraction): Promise<void> {
-        this.files = interaction.fields.getUploadedFiles('server-executable', false);
+        this.files = this.disableFileUpload ? null : interaction.fields.getUploadedFiles('server-executable', false);
 
         const startCommand = interaction.fields.getTextInputValue('start-command');
         const env = interaction.fields.getTextInputValue('environment-variables');
