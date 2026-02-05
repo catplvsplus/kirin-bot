@@ -89,7 +89,10 @@ export class ServerConfig implements ServerConfig.Data {
     }
 
     public async hasPermission(options: ServerConfig.PermissionCheckOptions): Promise<boolean> {
-        const { allowedUsers, requiredRoles, requiredPermissions, mustHaveAll } = this.permissions[options.action];
+        const permissions = this.permissions[options.action];
+        if (!permissions) return false;
+
+        const { allowedUsers, requiredRoles, requiredPermissions, mustHaveAll } = permissions;
 
         const guild = options.guildId ? await useClient().guilds.fetch(options.guildId).catch(() => null) : null;
         if (!guild && options.guildId) return false;
@@ -146,7 +149,7 @@ export namespace ServerConfig {
     export type ActionType = 'start'|'stop'|'restart';
 
     export interface Data {
-        permissions: Record<ActionType|'view'|'manage', ActionPermissionsData>;
+        permissions: Record<ActionType|'view'|'manage', ActionPermissionsData|null>;
         statusMessages: StatusMessageData[];
         logChannels: LogChannelData[];
     }
