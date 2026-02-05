@@ -47,11 +47,15 @@ export class KirinClient extends BaseModule {
 
     public filterServers(options?: KirinClient.FilterServersOptions): Collection<string, Server> {
         return this.kirin.servers.filter(server => {
-            if (options?.query && server.id != options.query && !server.name?.toLowerCase().includes(options.query)) {
+            if (
+                options?.query &&
+                server.id != options.query &&
+                !server.name?.toLowerCase().includes(options.query.toLowerCase())
+            ) {
                 return false;
             }
 
-            if (options?.status?.length && options.status.includes(server.status)) return false;
+            if (options?.status?.length && !options.status.includes(server.status)) return false;
             if (options?.type && server.type != options.type) return false;
             if (options?.isRunning !== undefined && server.isRunning !== options.isRunning) return false;
 
