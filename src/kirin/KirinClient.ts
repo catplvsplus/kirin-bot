@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { BaseModule } from 'reciple';
 import { ServerConfig } from '../utils/_ServerConfig.js';
 import type { Logger } from '@prtty/print';
+import { stripVTControlCharacters } from 'node:util';
 
 export class KirinClient extends BaseModule {
     public root: string = path.join(path.dirname(fileURLToPath(import.meta.url)), '../../servers');
@@ -49,21 +50,25 @@ export class KirinClient extends BaseModule {
             const channels = await config.fetchLogChannels();
 
             for (const channel of channels) {
-                await channel.send(message).catch(() => null);
+                await channel.send(stripVTControlCharacters(message)).catch(() => null);
             }
         }
 
         server.on('processStdout', data => broadcast(data));
         server.on('processStderr', data => broadcast(data));
 
-        server.on('processStart', () => broadcast(`Server "${server.name}" started.`));
-        server.on('processStop', (_, result) => broadcast(`Server "${server.name}" stopped.\n${result instanceof Error ? result.message : result?.stderr ?? result?.stdout}`));
+        server.on('processStart', () => this.logger.log(`Server "${server.name}" started.`));
+        server.on('processStop', (_, result) => this.logger.log(`Server "${server.name}" stopped.\n${result instanceof Error ? result.message : result?.stderr ?? result?.stdout}`));
     }
 
     public async onServerDelete(server: Server): Promise<void> {
         const config = this.configurations.get(server.id);
 
-        if (config) this.configurations.delete(server.id);
+        if (config) {
+            await config.save();
+
+            this.configurations.delete(server.id);
+        }
 
         this.logger.log(`Unloaded configuration for "${server.name}"`);
     }

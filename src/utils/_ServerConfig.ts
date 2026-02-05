@@ -112,7 +112,7 @@ export class ServerConfig implements ServerConfig.Data {
 
     public async save(): Promise<void> {
         await mkdir(path.dirname(this.path), { recursive: true });
-        await writeFile(this.path, stringify(this.data));
+        await writeFile(this.path, stringify(ServerConfig.schema.parse(this.data)));
     }
 
     public async read(): Promise<void> {

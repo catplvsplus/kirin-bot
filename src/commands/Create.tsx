@@ -92,7 +92,8 @@ export class CreateCommand extends SlashCommandModule {
             </>
         });
 
-        const server = await setup.createServer();
+        const server = await setup.apply();
+
         await interaction.editReply({
             components: <>
                 <TextDisplay>✅ Your server has been created!</TextDisplay>

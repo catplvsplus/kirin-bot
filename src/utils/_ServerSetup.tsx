@@ -1,6 +1,6 @@
 import { Server } from '@kirinmc/core';
 import { ActionRow, Button, Container, FileUpload, Heading, Label, LineBreak, Modal, Section, Separator, StringSelectMenu, StringSelectMenuOption, SubText, TextDisplay, TextInput } from '@reciple/jsx';
-import { ButtonStyle, ComponentType, inlineCode, TextInputStyle, type Attachment, type InteractionEditReplyOptions, type ModalBuilder, type ModalSubmitInteraction, type ReadonlyCollection, type RepliableInteraction } from 'discord.js';
+import { ButtonStyle, ComponentType, inlineCode, MessageFlags, TextInputStyle, type Attachment, type InteractionEditReplyOptions, type ModalBuilder, type ModalSubmitInteraction, type ReadonlyCollection, type RepliableInteraction } from 'discord.js';
 import KirinClient from '../kirin/KirinClient.js';
 import path from 'node:path';
 import { mkdir, stat } from 'node:fs/promises';
@@ -12,6 +12,8 @@ export class ServerSetup {
     public data: ServerSetup.Options['data'];
     public files: ReadonlyCollection<string, Attachment>|null = null;
 
+    public disableFileUpload = false;
+
     get isComplete() {
         return Server.schema.safeParse(this.data).success;
     }
@@ -19,6 +21,10 @@ export class ServerSetup {
     constructor(options: ServerSetup.Options) {
         this.interaction = options.interaction;
         this.data = options.data;
+
+        if (options.disableFileUpload) {
+            this.disableFileUpload = true;
+        }
     }
 
     public async start(): Promise<Server.Data|null> {
@@ -88,34 +94,18 @@ export class ServerSetup {
         return promise;
     }
 
-    public async createServer(): Promise<Server> {
+    public async apply(): Promise<Server> {
         if (!this.isComplete) throw new Error('Server setup is not complete.');
 
-        if (this.files) {
-            await Promise.all(
-                this.files.map(async file => {
-                    const fullPath = path.join(KirinClient.kirin.root, this.data.directory, file.name);
+        await this.downloadUploadedFiles();
 
-                    const stats = await stat(fullPath).catch(() => null);
-                    if (stats) return;
+        const server = KirinClient.kirin.get(this.data.id);
 
-                    const response = await fetch(file.url);
-                    if (!response.ok || !response.body) return;
-
-                    await mkdir(path.dirname(fullPath), { recursive: true });
-
-                    const writeStream = createWriteStream(fullPath);
-
-                    for await (const chunk of response.body) {
-                        writeStream.write(chunk);
-                    }
-
-                    writeStream.end();
-                })
-            )
+        if (!server) {
+            return KirinClient.kirin.add(this.data as Server.Data);
         }
 
-        return KirinClient.kirin.add(this.data as Server.Data);
+        return server.edit(this.data as Server.Data);
     }
 
     public createMessageData(options?: ServerSetup.CreateMessageDataOptions): InteractionEditReplyOptions {
@@ -123,6 +113,7 @@ export class ServerSetup {
 
         return {
             ...options?.base,
+            flags: MessageFlags.IsComponentsV2,
             components: <>
                 <Container>
                     <TextDisplay>
@@ -181,7 +172,7 @@ export class ServerSetup {
                     <Separator/>
                     <ActionRow>
                         <Button style={ButtonStyle.Danger} customId='cancel' disabled={options?.disabled}>Cancel</Button>
-                        <Button style={ButtonStyle.Success} customId='finish' disabled={options?.disabled}>Create Server</Button>
+                        <Button style={ButtonStyle.Success} customId='finish' disabled={options?.disabled || !this.isComplete}>Finish</Button>
                     </ActionRow>
                 </Container>
             </>
@@ -216,16 +207,20 @@ export class ServerSetup {
     public createModal(): ModalBuilder {
         return (
             <Modal customId='setup-software' title='Server Software Setup'>
-                <Label
-                    label='Server Executable'
-                    description='This is the file that will be used to run the server. (Can be a .jar or .exe file)'
-                >
-                    <FileUpload
-                        customId='server-executable'
-                        maxValues={1}
-                        required={false}
-                    />
-                </Label>
+                {
+                    !this.disableFileUpload
+                        ? <Label
+                            label='Server Executable'
+                            description='This is the file that will be used to run the server. (Can be a .jar or .exe file)'
+                        >
+                            <FileUpload
+                                customId='server-executable'
+                                maxValues={1}
+                                required={false}
+                            />
+                        </Label>
+                        : null
+                }
                 <Label
                     label='Start Command'
                     description='This is the command that will be executed to start the server.'
@@ -270,6 +265,32 @@ export class ServerSetup {
         );
     }
 
+    public async downloadUploadedFiles(): Promise<void> {
+        if (!this.files?.size) return
+
+        await Promise.all(
+            this.files.map(async file => {
+                const fullPath = path.join(KirinClient.kirin.root, this.data.directory, file.name);
+
+                const stats = await stat(fullPath).catch(() => null);
+                if (stats) return;
+
+                const response = await fetch(file.url);
+                if (!response.ok || !response.body) return;
+
+                await mkdir(path.dirname(fullPath), { recursive: true });
+
+                const writeStream = createWriteStream(fullPath);
+
+                for await (const chunk of response.body) {
+                    writeStream.write(chunk);
+                }
+
+                writeStream.end();
+            })
+        );
+    }
+
     public getErroredFields(): string[] {
         const data = Server.schema.safeParse(this.data);
         if (data.success) return [];
@@ -283,6 +304,7 @@ export class ServerSetup {
 export namespace ServerSetup {
     export interface Options {
         interaction: RepliableInteraction;
+        disableFileUpload?: boolean;
         data: Data;
     }
 

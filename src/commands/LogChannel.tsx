@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, SlashCommandModule, type SlashCommand } from 'reciple';
 import KirinClient from '../kirin/KirinClient.js';
-import { ChannelType, MessageFlags, type Channel, type InteractionEditReplyOptions } from 'discord.js';
+import { ChannelType, MessageFlags, type Channel, type InteractionEditReplyOptions, GuildChannel } from 'discord.js';
 import { ActionRow, ChannelSelectMenu, Container, Heading, LineBreak, SubText, TextDisplay } from '@reciple/jsx';
 import { SelectMenuDefaultValueType } from 'discord.js';
 import { InteractionListenerBuilder, InteractionListenerType, type InteractionListenerData } from '@reciple/modules';
@@ -69,22 +69,22 @@ export class LogChannelCommand extends SlashCommandModule {
         const message = await interaction.editReply(this.createMessageData(server, channels));
         const collector = message.createMessageComponentCollector({
             componentType: ComponentType.ChannelSelect,
-            time: 1000 * 60 * 5
+            time: 1000 * 60 * 2
         });
 
-        collector.on('collect', async interaction => {
-            const id = interaction.customId as `log-channel:${string}`;
-            const values = interaction.channels;
+        collector.on('collect', async i => {
+            const id = i.customId as `log-channel:${string}`;
+            const values = i.channels;
 
             if (!id.startsWith('log-channel:')) return;
-
-            await interaction.deferUpdate();
 
             config.data.logChannels = [];
             channels = [];
 
+            await i.deferUpdate();
+
             for (const [channelId, channelData] of values) {
-                const channel = await useClient().channels.fetch(channelId);
+                const channel = channelData instanceof GuildChannel ? channelData : await useClient().channels.fetch(channelId);
                 if (!channel || !channel.isSendable() || channel.isDMBased()) continue;
 
                 channels.push(channel);
