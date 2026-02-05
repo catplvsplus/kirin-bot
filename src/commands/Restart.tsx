@@ -40,6 +40,7 @@ export class RestartCommand extends SlashCommandModule {
         const { interaction } = data;
 
         const server = KirinClient.kirin.get(interaction.options.getString('server', true));
+        const config = KirinClient.configurations.get(server?.id ?? '');
 
         if (!server) {
             await interaction.reply('❌ Server not found.');
@@ -51,11 +52,21 @@ export class RestartCommand extends SlashCommandModule {
             return;
         }
 
-        await interaction.reply({
-            flags: MessageFlags.Ephemeral,
-            content: '⌛ Server is restarting...'
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
+        const hasPermission = await config?.hasPermission({
+            action: 'restart',
+            userId: interaction.user.id,
+            channelId: interaction.channelId,
+            guildId: interaction.guildId ?? undefined
         });
 
+        if (!hasPermission) {
+            await interaction.editReply('❌ You do not have permission to restart this server.');
+            return;
+        }
+
+        await interaction.editReply('⌛ Server is restarting...');
         await KirinClient.restart(server).catch(() => null);
 
         await interaction.editReply({

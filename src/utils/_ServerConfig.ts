@@ -14,24 +14,30 @@ export class ServerConfig implements ServerConfig.Data {
                 requiredPermissions: [],
                 mustHaveAll: true
             },
+            manage: {
+                allowedUsers: [],
+                requiredRoles: [],
+                requiredPermissions: ['Administrator'],
+                mustHaveAll: true
+            },
             start: {
                 allowedUsers: [],
                 requiredRoles: [],
-                requiredPermissions: [],
+                requiredPermissions: ['ViewChannel'],
                 mustHaveAll: true
             },
             stop: {
                 allowedUsers: [],
                 requiredRoles: [],
-                requiredPermissions: [],
+                requiredPermissions: ['Administrator'],
                 mustHaveAll: true
             },
             restart: {
                 allowedUsers: [],
                 requiredRoles: [],
-                requiredPermissions: [],
+                requiredPermissions: ['Administrator'],
                 mustHaveAll: true
-            }
+            },
         },
         statusMessages: [],
         logChannels: []
@@ -97,11 +103,13 @@ export class ServerConfig implements ServerConfig.Data {
         const member = guild ? await guild.members.fetch(user).catch(() => null) : null;
         if (!member && guild) return false;
 
-        const inAllowedUsers = allowedUsers.includes(user.id);
+        const inAllowedUsers = !allowedUsers.length || allowedUsers.includes(user.id);
         const hasRequiredRoles = requiredRoles.every(roleId => member?.roles.cache.has(roleId));
-        const hasRequiredPermissions = channel
-            ? !channel.isDMBased() && !!channel.permissionsFor(user)?.has(requiredPermissions)
-            : !!member?.permissions.has(requiredPermissions);
+        const hasRequiredPermissions = requiredPermissions
+            ? channel
+                ? !channel.isDMBased() && !!channel.permissionsFor(user)?.has(requiredPermissions)
+                : !!member?.permissions.has(requiredPermissions)
+            : true;
 
         if (mustHaveAll) {
             return inAllowedUsers && hasRequiredRoles && hasRequiredPermissions;
@@ -135,10 +143,10 @@ export namespace ServerConfig {
         channelId?: string;
     }
 
-    export type ActionType = 'view'|'start'|'stop'|'restart';
+    export type ActionType = 'start'|'stop'|'restart';
 
     export interface Data {
-        permissions: Record<ActionType, ActionPermissionsData>;
+        permissions: Record<ActionType|'view'|'manage', ActionPermissionsData>;
         statusMessages: StatusMessageData[];
         logChannels: LogChannelData[];
     }

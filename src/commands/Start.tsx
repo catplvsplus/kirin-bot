@@ -40,8 +40,8 @@ export class StartCommand extends SlashCommandModule {
     public async execute(data: SlashCommand.ExecuteData): Promise<void> {
         const { interaction } = data;
 
-        const serverId = interaction.options.getString('server', true);
-        const server = KirinClient.kirin.get(serverId);
+        const server = KirinClient.kirin.get(interaction.options.getString('server', true));
+        const config = KirinClient.configurations.get(server?.id ?? '');
 
         if (!server) {
             await interaction.reply({
@@ -59,10 +59,21 @@ export class StartCommand extends SlashCommandModule {
             return;
         }
 
-        await interaction.reply({
-            flags: MessageFlags.Ephemeral,
-            content: '⌛ Server is starting...'
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
+        const hasPermission = await config?.hasPermission({
+            action: 'start',
+            userId: interaction.user.id,
+            channelId: interaction.channelId,
+            guildId: interaction.guildId ?? undefined
         });
+
+        if (!hasPermission) {
+            await interaction.editReply('❌ You do not have permission to start this server.');
+            return;
+        }
+
+        await interaction.editReply('⌛ Server is starting...');
 
         let resolve: (process: Result, reason?: Output|Error) => void = () => null;
         const promise = new Promise(res => resolve = (process: Result, reason?: Output|Error) => {
