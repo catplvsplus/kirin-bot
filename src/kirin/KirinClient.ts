@@ -32,6 +32,19 @@ export class KirinClient extends BaseModule {
         await this.kirin.save();
     }
 
+    public async restart(server: Server): Promise<void> {
+        let started: () => void;
+        const startedPromise = new Promise<void>(resolve => started = resolve);
+
+        await server.stop();
+
+        server.once('processStart', () => started());
+
+        await server.start();
+
+        return startedPromise;
+    }
+
     public async onServerCreate(server: Server): Promise<void> {
         const config = new ServerConfig(path.join(
             this.kirin.root,
@@ -45,8 +58,6 @@ export class KirinClient extends BaseModule {
         this.logger.log(`Loaded configuration for "${server.name}"`);
 
         const broadcast = async (message: string) => {
-            this.logger.log(message);
-
             const channels = await config.fetchLogChannels();
 
             for (const channel of channels) {
@@ -58,7 +69,7 @@ export class KirinClient extends BaseModule {
         server.on('processStderr', data => broadcast(data));
 
         server.on('processStart', () => this.logger.log(`Server "${server.name}" started.`));
-        server.on('processStop', (_, result) => this.logger.log(`Server "${server.name}" stopped.\n${result instanceof Error ? result.message : result?.stderr ?? result?.stdout}`));
+        server.on('processStop', (_, result) => this.logger.log(`Server "${server.name}" stopped: ${result instanceof Error ? result.message : result?.stderr ?? result?.stdout}`));
     }
 
     public async onServerDelete(server: Server): Promise<void> {
