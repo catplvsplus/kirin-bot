@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, SlashCommandModule, type SlashCommand } from 'reciple';
 import KirinClient from '../kirin/KirinClient.js';
-import { Colors, inlineCode, InteractionContextType, MessageFlags } from 'discord.js';
+import { Colors, inlineCode, InteractionContextType, MessageFlags, PermissionFlagsBits } from 'discord.js';
 import { Server } from '@kirinmc/core';
 import { slug } from 'github-slugger';
 import { FolderSelector } from '../utils/_FolderSelector.js';
@@ -12,11 +12,8 @@ export class CreateCommand extends SlashCommandModule {
     public data = new SlashCommandBuilder()
         .setName('create')
         .setDescription('Create a new server.')
-        .setContexts(
-            InteractionContextType.BotDM,
-            InteractionContextType.Guild,
-            InteractionContextType.PrivateChannel
-        )
+        .setContexts(InteractionContextType.Guild)
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
         .addStringOption(id => id
             .setName('id')
             .setDescription('The id of the server (must be unique)')

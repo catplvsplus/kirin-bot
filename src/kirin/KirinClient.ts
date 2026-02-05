@@ -1,5 +1,5 @@
 import { ServerManager, type Server } from '@kirinmc/core';
-import { Collection } from 'discord.js';
+import { Collection } from '@discordjs/collection';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { BaseModule } from 'reciple';
@@ -45,6 +45,39 @@ export class KirinClient extends BaseModule {
         return startedPromise;
     }
 
+    public filterServers(options?: KirinClient.FilterServersOptions): Collection<string, Server> {
+        return this.kirin.servers.filter(server => {
+            if (options?.query && server.id != options.query && !server.name?.toLowerCase().includes(options.query)) {
+                return false;
+            }
+
+            if (options?.status?.length && options.status.includes(server.status)) return false;
+            if (options?.type && server.type != options.type) return false;
+            if (options?.isRunning !== undefined && server.isRunning !== options.isRunning) return false;
+
+            return true;
+        });
+    }
+
+    public async filterByPermission(options: KirinClient.FilterServersByPermissionOptions): Promise<Collection<string, Server>> {
+        const servers = new Collection<string, Server>();
+
+        for (const server of options.servers?.values() ?? this.kirin.servers.values()) {
+            const config = this.configurations.get(server.id);
+
+            if (config && await config.hasPermission({
+                action: options.action,
+                userId: options.userId,
+                guildId: options.guildId,
+                channelId: options.channelId
+            })) {
+                servers.set(server.id, server);
+            }
+        }
+
+        return servers;
+    }
+
     public async onServerCreate(server: Server): Promise<void> {
         const config = new ServerConfig(path.join(
             this.kirin.root,
@@ -82,6 +115,19 @@ export class KirinClient extends BaseModule {
         }
 
         this.logger.log(`Unloaded configuration for "${server.name}"`);
+    }
+}
+
+export namespace KirinClient {
+    export interface FilterServersOptions {
+        query: string;
+        isRunning?: boolean;
+        status?: Server.Status[];
+        type?: Server.Type;
+    }
+
+    export interface FilterServersByPermissionOptions extends ServerConfig.PermissionCheckOptions {
+        servers?: Collection<string, Server>;
     }
 }
 

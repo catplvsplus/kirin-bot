@@ -1,12 +1,14 @@
 import { InteractionListenerBuilder, InteractionListenerType, type InteractionListenerData } from '@reciple/modules';
 import { SlashCommandBuilder, SlashCommandModule, type SlashCommand } from 'reciple';
-import { MessageFlags } from 'discord.js';
+import { InteractionContextType, MessageFlags, PermissionFlagsBits } from 'discord.js';
 import KirinClient from '../kirin/KirinClient.js';
 
 export class RestartCommand extends SlashCommandModule {
     public data = new SlashCommandBuilder()
         .setName('restart')
         .setDescription('Restarts a running server.')
+        .setContexts(InteractionContextType.Guild)
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
         .addStringOption(server => server
             .setName('server')
             .setDescription('The target server to restart.')
@@ -20,18 +22,23 @@ export class RestartCommand extends SlashCommandModule {
             .setType(InteractionListenerType.Autocomplete)
             .setFilter(interaction => interaction.commandName === 'restart')
             .setExecute(async interaction => {
-                const servers = KirinClient.kirin.servers;
                 const query = interaction.options.getFocused().toLowerCase();
+                const servers = await KirinClient.filterByPermission({
+                    servers: KirinClient.filterServers({
+                        query,
+                        isRunning: true
+                    }),
+                    action: 'restart',
+                    userId: interaction.user.id,
+                    guildId: interaction.guildId ?? undefined,
+                    channelId: interaction.channelId
+                });
 
                 await interaction.respond(
                     servers
-                        .filter(s => s.isRunning && (!query || s.id === query || s.name?.toLowerCase().includes(query)))
-                        .map(s => ({
-                            name: s.name || s.id,
-                            value: s.id
-                        }))
+                        .map(s => ({ name: s.name || s.id, value: s.id }))
                         .splice(0, 25)
-                )
+                );
             })
             .toJSON()
     ];

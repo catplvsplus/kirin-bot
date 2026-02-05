@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, SlashCommandModule, type SlashCommand } from 'reciple';
 import KirinClient from '../kirin/KirinClient.js';
-import { ChannelType, MessageFlags, type Channel, type InteractionEditReplyOptions, GuildChannel } from 'discord.js';
+import { ChannelType, MessageFlags, type Channel, type InteractionEditReplyOptions, GuildChannel, PermissionFlagsBits, InteractionContextType } from 'discord.js';
 import { ActionRow, ChannelSelectMenu, Container, Heading, LineBreak, SubText, TextDisplay } from '@reciple/jsx';
 import { SelectMenuDefaultValueType } from 'discord.js';
 import { InteractionListenerBuilder, InteractionListenerType, type InteractionListenerData } from '@reciple/modules';
@@ -11,6 +11,8 @@ export class LogChannelCommand extends SlashCommandModule {
     public data = new SlashCommandBuilder()
         .setName('log-channel')
         .setDescription(`Manage a server's log channels.`)
+        .setContexts(InteractionContextType.Guild)
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
         .addStringOption(server => server
             .setName('server')
             .setDescription(`The target server.`)
@@ -25,16 +27,19 @@ export class LogChannelCommand extends SlashCommandModule {
             .setFilter(interaction => interaction.commandName === 'log-channel')
             .setExecute(async interaction => {
                 const query = interaction.options.getFocused().toLowerCase();
+                const servers = await KirinClient.filterByPermission({
+                    servers: KirinClient.filterServers({ query }),
+                    action: 'manage',
+                    userId: interaction.user.id,
+                    guildId: interaction.guildId ?? undefined,
+                    channelId: interaction.channelId
+                });
 
                 await interaction.respond(
-                    KirinClient.kirin.servers
-                        .filter(s => !query || s.id === query || s.name?.toLowerCase().includes(query))
-                        .map(s => ({
-                            name: s.name || s.id,
-                            value: s.id
-                        }))
+                    servers
+                        .map(s => ({ name: s.name || s.id, value: s.id }))
                         .splice(0, 25)
-                )
+                );
             })
             .toJSON()
     ];
@@ -46,7 +51,7 @@ export class LogChannelCommand extends SlashCommandModule {
         const server = KirinClient.kirin.get(serverId);
         const config = KirinClient.configurations.get(serverId);
 
-        if (!server) {
+        if (!server || !config) {
             await interaction.reply({
                 flags: MessageFlags.Ephemeral,
                 content: '❌ Server not found.'
@@ -54,15 +59,19 @@ export class LogChannelCommand extends SlashCommandModule {
             return;
         }
 
-        if (!config) {
-            await interaction.reply({
-                flags: MessageFlags.Ephemeral,
-                content: '❌ Configuration not found.'
-            });
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
+        const hasPermission = await config.hasPermission({
+            action: 'manage',
+            userId: interaction.user.id,
+            channelId: interaction.channelId,
+            guildId: interaction.guildId ?? undefined
+        });
+
+        if (!hasPermission) {
+            await interaction.editReply('❌ You do not have permission to manage this server.');
             return;
         }
-
-        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
         let channels = await config.fetchLogChannels();
 

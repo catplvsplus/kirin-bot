@@ -2,13 +2,15 @@ import { InteractionListenerBuilder, InteractionListenerType, type InteractionLi
 import { SlashCommandBuilder, SlashCommandModule, type SlashCommand } from 'reciple';
 import KirinClient from '../kirin/KirinClient.js';
 import { ServerSetup } from '../utils/_ServerSetup.js';
-import { Colors, inlineCode, MessageFlags } from 'discord.js';
+import { Colors, inlineCode, InteractionContextType, MessageFlags, PermissionFlagsBits } from 'discord.js';
 import { Container, Heading, LineBreak, SubText, TextDisplay } from '@reciple/jsx';
 
 export class Configure extends SlashCommandModule {
     public data = new SlashCommandBuilder()
         .setName('configure')
         .setDescription('Configure a server.')
+        .setContexts(InteractionContextType.Guild)
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
         .addStringOption(server => server
             .setName('server')
             .setDescription('The target server.')
@@ -22,18 +24,20 @@ export class Configure extends SlashCommandModule {
             .setType(InteractionListenerType.Autocomplete)
             .setFilter(interaction => interaction.commandName === 'configure')
             .setExecute(async interaction => {
-                const servers = KirinClient.kirin.servers;
                 const query = interaction.options.getFocused().toLowerCase();
+                const servers = await KirinClient.filterByPermission({
+                    servers: KirinClient.filterServers({ query }),
+                    action: 'manage',
+                    userId: interaction.user.id,
+                    guildId: interaction.guildId ?? undefined,
+                    channelId: interaction.channelId
+                });
 
                 await interaction.respond(
                     servers
-                        .filter(s => !query || s.id === query || s.name?.toLowerCase().includes(query))
-                        .map(s => ({
-                            name: s.name || s.id,
-                            value: s.id
-                        }))
+                        .map(s => ({ name: s.name || s.id, value: s.id }))
                         .splice(0, 25)
-                )
+                );
             })
             .toJSON(),
     ];
@@ -42,8 +46,9 @@ export class Configure extends SlashCommandModule {
         const { interaction } = data;
 
         const server = KirinClient.kirin.get(interaction.options.getString('server', true));
+        const config = KirinClient.configurations.get(server?.id ?? '');
 
-        if (!server) {
+        if (!server || !config) {
             await interaction.reply({
                 content: '❌ Server not found.',
                 ephemeral: true
@@ -52,6 +57,18 @@ export class Configure extends SlashCommandModule {
         }
 
         await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
+        const hasPermission = await config.hasPermission({
+            action: 'manage',
+            userId: interaction.user.id,
+            channelId: interaction.channelId,
+            guildId: interaction.guildId ?? undefined
+        });
+
+        if (!hasPermission) {
+            await interaction.editReply('❌ You do not have permission to manage this server.');
+            return;
+        }
 
         const setup = new ServerSetup({
             interaction,

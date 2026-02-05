@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, SlashCommandModule, type SlashCommand } from 'reciple';
 import KirinClient from '../kirin/KirinClient.js';
-import { bold, Colors, MessageFlags } from 'discord.js';
+import { bold, Colors, InteractionContextType, MessageFlags, PermissionFlagsBits } from 'discord.js';
 import { Container, Heading, LineBreak, Separator, SubText, TextDisplay } from '@reciple/jsx';
 import type { Server } from '@kirinmc/core';
 
@@ -8,15 +8,24 @@ export class ServersCommand extends SlashCommandModule {
     public data = new SlashCommandBuilder()
         .setName('servers')
         .setDescription('List all servers.')
+        .setContexts(InteractionContextType.Guild)
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
         .toJSON();
 
     public async execute(data: SlashCommand.ExecuteData): Promise<void> {
         const { interaction } = data;
 
-        const servers = KirinClient.kirin.servers;
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-        await interaction.reply({
-            flags: [MessageFlags.Ephemeral, MessageFlags.IsComponentsV2],
+        const servers = await KirinClient.filterByPermission({
+            action: 'view',
+            userId: interaction.user.id,
+            guildId: interaction.guildId ?? undefined,
+            channelId: interaction.channelId,
+        });
+
+        await interaction.editReply({
+            flags: MessageFlags.IsComponentsV2,
             components: servers.map(server => (
                 <Container
                     accentColor={server.ping.latest?.status === 'online' ? Colors.Green : Colors.DarkButNotBlack}

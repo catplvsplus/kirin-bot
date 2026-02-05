@@ -140,7 +140,7 @@ export class ServerConfig implements ServerConfig.Data {
 
 export namespace ServerConfig {
     export interface PermissionCheckOptions {
-        action: ActionType;
+        action: keyof ServerConfig.Data['permissions'];
         userId: string;
         guildId?: string;
         channelId?: string;
