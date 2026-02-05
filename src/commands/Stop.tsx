@@ -62,7 +62,7 @@ export class StopCommand extends SlashCommandModule {
         await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
         const hasPermission = await config?.hasPermission({
-            action: 'start',
+            action: 'stop',
             userId: interaction.user.id,
             channelId: interaction.channelId,
             guildId: interaction.guildId ?? undefined
