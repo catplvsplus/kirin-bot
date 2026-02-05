@@ -180,7 +180,7 @@ export class ServerSetup {
     }
 
     public async handleSetupSoftwareModal(interaction: ModalSubmitInteraction): Promise<void> {
-        this.files = interaction.fields.getUploadedFiles('server-executable');
+        this.files = interaction.fields.getUploadedFiles('server-executable', false);
 
         const startCommand = interaction.fields.getTextInputValue('start-command');
         const env = interaction.fields.getTextInputValue('environment-variables');
@@ -202,6 +202,32 @@ export class ServerSetup {
 
         await interaction.deferUpdate();
         await interaction.editReply(this.createMessageData());
+    }
+
+    public async downloadUploadedFiles(): Promise<void> {
+        if (!this.files?.size) return
+
+        await Promise.all(
+            this.files.map(async file => {
+                const fullPath = path.join(KirinClient.kirin.root, this.data.directory, file.name);
+
+                const stats = await stat(fullPath).catch(() => null);
+                if (stats) return;
+
+                const response = await fetch(file.url);
+                if (!response.ok || !response.body) return;
+
+                await mkdir(path.dirname(fullPath), { recursive: true });
+
+                const writeStream = createWriteStream(fullPath);
+
+                for await (const chunk of response.body) {
+                    writeStream.write(chunk);
+                }
+
+                writeStream.end();
+            })
+        );
     }
 
     public createModal(): ModalBuilder {
@@ -262,32 +288,6 @@ export class ServerSetup {
                     />
                 </Label>
             </Modal>
-        );
-    }
-
-    public async downloadUploadedFiles(): Promise<void> {
-        if (!this.files?.size) return
-
-        await Promise.all(
-            this.files.map(async file => {
-                const fullPath = path.join(KirinClient.kirin.root, this.data.directory, file.name);
-
-                const stats = await stat(fullPath).catch(() => null);
-                if (stats) return;
-
-                const response = await fetch(file.url);
-                if (!response.ok || !response.body) return;
-
-                await mkdir(path.dirname(fullPath), { recursive: true });
-
-                const writeStream = createWriteStream(fullPath);
-
-                for await (const chunk of response.body) {
-                    writeStream.write(chunk);
-                }
-
-                writeStream.end();
-            })
         );
     }
 

@@ -140,6 +140,7 @@ export class FolderSelector {
         const fullPath = path.join(this.cwd, name);
 
         await mkdir(fullPath);
+        await this.chdir(this.cwd);
     }
 
     public async createMessageData(options?: FolderSelector.MessageDataOptions): Promise<InteractionEditReplyOptions> {
