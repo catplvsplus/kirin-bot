@@ -24,6 +24,11 @@ export class ServersCommand extends SlashCommandModule {
             channelId: interaction.channelId,
         });
 
+        if (!servers.size) {
+            await interaction.editReply('❌ You do not have permission to view any servers.');
+            return;
+        }
+
         await interaction.editReply({
             flags: MessageFlags.IsComponentsV2,
             components: servers.map(server => (
@@ -40,7 +45,6 @@ export class ServersCommand extends SlashCommandModule {
                         ? <>
                             <Separator/>
                             <TextDisplay>{server.ping.latest.motd.replace(/§[0-9A-FK-OR]/gi, '')}</TextDisplay>
-                            <Separator/>
                         </>
                         : undefined
                     }

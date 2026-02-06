@@ -178,7 +178,7 @@ export namespace ServerConfig {
 
     export const schema = z.object({
         permissions: z.record(
-            z.enum(['view', 'start', 'stop', 'restart']),
+            z.enum(['view', 'manage', 'start', 'stop', 'restart']),
             z.object({
                 allowedUsers: z.string().array(),
                 requiredRoles: z.string().array(),
