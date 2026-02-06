@@ -2,7 +2,6 @@ import { InteractionListenerBuilder, InteractionListenerType, type InteractionLi
 import { SlashCommandBuilder, SlashCommandModule, type SlashCommand } from 'reciple';
 import KirinClient from '../kirin/KirinClient.js';
 import { InteractionContextType, MessageFlags, PermissionFlagsBits } from 'discord.js';
-import type { Output, Result } from 'tinyexec';
 
 export class StartCommand extends SlashCommandModule {
     public data = new SlashCommandBuilder()
@@ -90,19 +89,7 @@ export class StartCommand extends SlashCommandModule {
         }
 
         await interaction.editReply('⌛ Server is starting...');
-
-        let resolve: (process: Result, reason?: Output|Error) => void = () => null;
-        const promise = new Promise(res => resolve = (process: Result, reason?: Output|Error) => {
-            server.removeListener('processStart', resolve);
-            server.removeListener('processStop', resolve);
-            res(null);
-        });
-
-        server.once('processStart', resolve);
-        server.once('processStop', resolve);
-
         await server.start();
-        await promise;
 
         await interaction.editReply({
             content: server.isRunning

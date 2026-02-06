@@ -5,7 +5,7 @@
     "": {
       "name": "kirin-bot",
       "dependencies": {
-        "@kirinmc/core": "^0.0.2",
+        "@kirinmc/core": "^0.0.3",
         "@prtty/print": "^1.1.1",
         "@reciple/core": "^10.0.1",
         "@reciple/jsx": "^10.0.8",
@@ -18,7 +18,7 @@
         "zod": "^4.3.6",
       },
       "devDependencies": {
-        "@types/node": "^25.2.0",
+        "@types/node": "^25.2.1",
         "nodemon": "^3.1.11",
         "typescript": "^5.9.3",
       },
@@ -78,7 +78,7 @@
 
     "@jsprismarine/jsbinaryutils": ["@jsprismarine/jsbinaryutils@2.1.4", "", {}, "sha512-LFMbAJsHEiq5UJwPzrHYZbCkZ/LZEhV76SYXPDjcQLosqVwcf0yyyr+ICxT4j/d4xPH7vDSvWCqOuFRsSv9wYw=="],
 
-    "@kirinmc/core": ["@kirinmc/core@0.0.2", "", { "dependencies": { "@discordjs/collection": "^2.1.1", "@dotenvx/dotenvx": "^1.52.0", "args-tokenizer": "^0.3.0", "bedrock-protocol": "^3.52.0", "minecraft-protocol": "^1.63.0", "tinyexec": "^1.0.2", "zod": "^4.3.6" } }, "sha512-frhViQJzpeONmxWPp50h49MRa+qcpQgS+LiHfQEaosxftLhV0MKQpO6ODL21+pk3qRDM6EGeeR35t1A4uNJ0zA=="],
+    "@kirinmc/core": ["@kirinmc/core@0.0.3", "", { "dependencies": { "@discordjs/collection": "^2.1.1", "@dotenvx/dotenvx": "^1.52.0", "args-tokenizer": "^0.3.0", "bedrock-protocol": "^3.52.0", "minecraft-protocol": "^1.63.0", "tinyexec": "^1.0.2", "zod": "^4.3.6" } }, "sha512-BX4FJVMGPSHb1UcdJUASHsKRs+FPlC2hIXFofiBplPx+szd6NNJewP0zFvILLOpPjclO7kY92BI4hpgGFlFg8A=="],
 
     "@napi-rs/wasm-runtime": ["@napi-rs/wasm-runtime@1.1.1", "", { "dependencies": { "@emnapi/core": "^1.7.1", "@emnapi/runtime": "^1.7.1", "@tybys/wasm-util": "^0.10.1" } }, "sha512-p64ah1M1ld8xjWv3qbvFwHiFVWrq1yFvV4f7w+mzaqiR4IlSgkqhcRdHwsGgomwzBH51sRY4NEowLxnaBjcW/A=="],
 
@@ -152,7 +152,7 @@
 
     "@types/jsesc": ["@types/jsesc@2.5.1", "", {}, "sha512-9VN+6yxLOPLOav+7PwjZbxiID2bVaeq0ED4qSQmdQTdjnXJSaCVKTR58t15oqH1H5t8Ng2ZX1SabJVoN9Q34bw=="],
 
-    "@types/node": ["@types/node@25.2.0", "", { "dependencies": { "undici-types": "~7.16.0" } }, "sha512-DZ8VwRFUNzuqJ5khrvwMXHmvPe+zGayJhr2CDNiKB1WBE1ST8Djl00D0IC4vvNmHMdj6DlbYRIaFE7WHjlDl5w=="],
+    "@types/node": ["@types/node@25.2.1", "", { "dependencies": { "undici-types": "~7.16.0" } }, "sha512-CPrnr8voK8vC6eEtyRzvMpgp3VyVRhgclonE7qYi6P9sXwYb59ucfrnmFBTaP0yUi8Gk4yZg/LlTJULGxvTNsg=="],
 
     "@types/node-rsa": ["@types/node-rsa@1.1.4", "", { "dependencies": { "@types/node": "*" } }, "sha512-dB0ECel6JpMnq5ULvpUTunx3yNm8e/dIkv8Zu9p2c8me70xIRUUG3q+qXRwcSf9rN3oqamv4116iHy90dJGRpA=="],
 

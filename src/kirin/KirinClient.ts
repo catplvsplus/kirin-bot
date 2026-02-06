@@ -33,16 +33,8 @@ export class KirinClient extends BaseModule {
     }
 
     public async restart(server: Server): Promise<void> {
-        let started: () => void;
-        const startedPromise = new Promise<void>(resolve => started = resolve);
-
         await server.stop();
-
-        server.once('processStart', () => started());
-
         await server.start();
-
-        return startedPromise;
     }
 
     public filterServers(options?: KirinClient.FilterServersOptions): Collection<string, Server> {
