@@ -11,30 +11,35 @@ export class ServerConfig implements ServerConfig.Data {
             view: {
                 allowedUsers: [],
                 requiredRoles: [],
+                allowedGuilds: [],
                 requiredPermissions: [],
                 mustHaveAll: true
             },
             manage: {
                 allowedUsers: [],
                 requiredRoles: [],
+                allowedGuilds: [],
                 requiredPermissions: ['Administrator'],
                 mustHaveAll: true
             },
             start: {
                 allowedUsers: [],
                 requiredRoles: [],
+                allowedGuilds: [],
                 requiredPermissions: ['ViewChannel'],
                 mustHaveAll: true
             },
             stop: {
                 allowedUsers: [],
                 requiredRoles: [],
+                allowedGuilds: [],
                 requiredPermissions: ['Administrator'],
                 mustHaveAll: true
             },
             restart: {
                 allowedUsers: [],
                 requiredRoles: [],
+                allowedGuilds: [],
                 requiredPermissions: ['Administrator'],
                 mustHaveAll: true
             },
@@ -108,6 +113,7 @@ export class ServerConfig implements ServerConfig.Data {
 
         const inAllowedUsers = !allowedUsers.length || allowedUsers.includes(user.id);
         const hasRequiredRoles = requiredRoles.every(roleId => member?.roles.cache.has(roleId));
+        const inAllowedGuilds = !permissions.allowedGuilds.length || !guild || permissions.allowedGuilds.includes(guild.id);
         const hasRequiredPermissions = !requiredPermissions
             || (
                 channel
@@ -116,9 +122,9 @@ export class ServerConfig implements ServerConfig.Data {
             );
 
         if (mustHaveAll) {
-            return inAllowedUsers && hasRequiredRoles && hasRequiredPermissions;
+            return inAllowedUsers && hasRequiredRoles && inAllowedGuilds && hasRequiredPermissions;
         } else {
-            return inAllowedUsers || hasRequiredRoles || hasRequiredPermissions;
+            return inAllowedUsers || hasRequiredRoles || inAllowedGuilds || hasRequiredPermissions;
         }
     }
 
@@ -158,6 +164,7 @@ export namespace ServerConfig {
     export interface ActionPermissionsData {
         allowedUsers: string[];
         requiredRoles: string[];
+        allowedGuilds: string[];
         requiredPermissions: PermissionResolvable;
         mustHaveAll: boolean;
     }
@@ -181,6 +188,7 @@ export namespace ServerConfig {
             z.object({
                 allowedUsers: z.string().array(),
                 requiredRoles: z.string().array(),
+                allowedGuilds: z.string().array(),
                 requiredPermissions: z.any(),
                 mustHaveAll: z.boolean()
             }),
