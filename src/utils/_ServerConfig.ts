@@ -1,10 +1,12 @@
-import { type Message, type SendableChannels } from 'discord.js';
+import { type SendableChannels } from 'discord.js';
 import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { parse, stringify } from 'yaml';
 import z from 'zod';
 import KirinClient from '../kirin/KirinClient.js';
 import { GlobalConfig } from './_GlobalConfig.js';
+import { StatusMessageManager } from './_StatusMessageManager.js';
+import type { Server } from '@kirinmc/core';
 
 export class ServerConfig implements ServerConfig.Data {
     public path: string;
@@ -20,6 +22,8 @@ export class ServerConfig implements ServerConfig.Data {
         logChannels: []
     };
 
+    public messages: StatusMessageManager = new StatusMessageManager(this);
+
     get permissions() {
         return this.data.permissions;
     }
@@ -32,7 +36,7 @@ export class ServerConfig implements ServerConfig.Data {
         return this.data.logChannels;
     }
 
-    constructor(path: string) {
+    constructor(path: string, public server: Server) {
         this.path = path;
     }
 
@@ -47,22 +51,6 @@ export class ServerConfig implements ServerConfig.Data {
         }
 
         return logChannels;
-    }
-
-    public async fetchStatusMessages(): Promise<Message[]> {
-        const messages: Message[] = [];
-
-        for (const data of this.statusMessages) {
-            const channel = await useClient().channels.fetch(data.channelId);
-            if (!channel || !channel.isTextBased()) continue;
-
-            const message = await channel.messages.fetch(data.messageId).catch(() => null);
-            if (!message) continue;
-
-            messages.push(message);
-        }
-
-        return messages;
     }
 
     public async hasPermission(options: GlobalConfig.PermissionCheckOptions): Promise<boolean> {
@@ -122,6 +110,7 @@ export namespace ServerConfig {
             guildId: z.string(),
             channelId: z.string(),
             messageId: z.string(),
+            allowedActions: z.array(z.enum(['start', 'stop', 'restart']))
         })
         .array(),
         logChannels: z.object({

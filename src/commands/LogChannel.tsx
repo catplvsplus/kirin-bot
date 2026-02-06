@@ -1,11 +1,12 @@
 import { SlashCommandBuilder, SlashCommandModule, type SlashCommand } from 'reciple';
 import KirinClient from '../kirin/KirinClient.js';
-import { ChannelType, MessageFlags, type Channel, type InteractionEditReplyOptions, GuildChannel, PermissionFlagsBits, InteractionContextType } from 'discord.js';
+import { MessageFlags, type Channel, type InteractionEditReplyOptions, GuildChannel, PermissionFlagsBits, InteractionContextType } from 'discord.js';
 import { ActionRow, ChannelSelectMenu, Container, Heading, LineBreak, SubText, TextDisplay } from '@reciple/jsx';
 import { SelectMenuDefaultValueType } from 'discord.js';
 import { InteractionListenerBuilder, InteractionListenerType, type InteractionListenerData } from '@reciple/modules';
 import type { Server } from '@kirinmc/core';
 import { ComponentType } from 'discord.js';
+import { GlobalConfig } from '../utils/_GlobalConfig.js';
 
 export class LogChannelCommand extends SlashCommandModule {
     public data = new SlashCommandBuilder()
@@ -129,11 +130,7 @@ export class LogChannelCommand extends SlashCommandModule {
                         <ChannelSelectMenu
                             placeholder="Select a server log channels"
                             customId={`log-channel:${server.id}`}
-                            channelTypes={[
-                                ChannelType.GuildStageVoice,
-                                ChannelType.GuildVoice,
-                                ChannelType.GuildText
-                            ]}
+                            channelTypes={GlobalConfig.sendableChannelTypes}
                             defaultValues={channels.map(c => ({
                                 id: c.id,
                                 type: SelectMenuDefaultValueType.Channel

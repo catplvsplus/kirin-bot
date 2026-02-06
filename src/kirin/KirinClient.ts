@@ -115,7 +115,7 @@ export class KirinClient extends BaseModule {
             this.kirin.root,
             server.directory,
             'kirin.yml'
-        ));
+        ), server);
 
         await config.read();
 
@@ -135,6 +135,7 @@ export class KirinClient extends BaseModule {
 
         server.on('processStart', () => this.logger.log(`Server "${server.name}" started.`));
         server.on('processStop', (_, result) => this.logger.log(`Server "${server.name}" stopped: ${result instanceof Error ? result.message : result?.stderr ?? result?.stdout}`));
+        server.on('statusUpdate', () => config.messages.updateStatusMessage());
     }
 
     public async onServerDelete(server: Server): Promise<void> {

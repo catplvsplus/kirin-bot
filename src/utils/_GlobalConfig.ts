@@ -1,4 +1,4 @@
-import type { PermissionResolvable } from 'discord.js';
+import { ChannelType, type PermissionResolvable } from 'discord.js';
 import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { parse, stringify } from 'yaml';
@@ -83,6 +83,12 @@ export class GlobalConfig {
 }
 
 export namespace GlobalConfig {
+    export const sendableChannelTypes = [
+        ChannelType.GuildText,
+        ChannelType.GuildStageVoice,
+        ChannelType.GuildVoice
+    ] as const;
+
     export type ServerActionType = 'start'|'stop'|'restart';
     export type ActionType = ServerActionType|'view'|'manage';
 
