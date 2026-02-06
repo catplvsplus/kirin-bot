@@ -95,7 +95,6 @@ export class ServerConfig implements ServerConfig.Data {
         const { allowedUsers, requiredRoles, requiredPermissions, mustHaveAll } = permissions;
 
         const guild = options.guildId ? await useClient().guilds.fetch(options.guildId).catch(() => null) : null;
-        useLogger().log('Guild:', guild, options.guildId);
         if (!guild && options.guildId) return false;
 
         const channel = options.channelId ? await useClient().channels.fetch(options.channelId) : null;
