@@ -1,48 +1,20 @@
-import { type Message, type PermissionResolvable, type SendableChannels } from 'discord.js';
+import { type Message, type SendableChannels } from 'discord.js';
 import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { parse, stringify } from 'yaml';
 import z from 'zod';
+import KirinClient from '../kirin/KirinClient.js';
+import { GlobalConfig } from './_GlobalConfig.js';
 
 export class ServerConfig implements ServerConfig.Data {
     public path: string;
     public data: ServerConfig.Data = {
         permissions: {
-            view: {
-                allowedUsers: [],
-                requiredRoles: [],
-                allowedGuilds: [],
-                requiredPermissions: [],
-                mustHaveAll: true
-            },
-            manage: {
-                allowedUsers: [],
-                requiredRoles: [],
-                allowedGuilds: [],
-                requiredPermissions: ['Administrator'],
-                mustHaveAll: true
-            },
-            start: {
-                allowedUsers: [],
-                requiredRoles: [],
-                allowedGuilds: [],
-                requiredPermissions: ['ViewChannel'],
-                mustHaveAll: true
-            },
-            stop: {
-                allowedUsers: [],
-                requiredRoles: [],
-                allowedGuilds: [],
-                requiredPermissions: ['Administrator'],
-                mustHaveAll: true
-            },
-            restart: {
-                allowedUsers: [],
-                requiredRoles: [],
-                allowedGuilds: [],
-                requiredPermissions: ['Administrator'],
-                mustHaveAll: true
-            },
+            manage: 'default',
+            view: 'default',
+            start: 'default',
+            stop: 'default',
+            restart: 'default'
         },
         statusMessages: [],
         logChannels: []
@@ -93,39 +65,19 @@ export class ServerConfig implements ServerConfig.Data {
         return messages;
     }
 
-    public async hasPermission(options: ServerConfig.PermissionCheckOptions): Promise<boolean> {
+    public async hasPermission(options: GlobalConfig.PermissionCheckOptions): Promise<boolean> {
         const permissions = this.permissions[options.action];
-        if (!permissions) return false;
 
-        const { allowedUsers, requiredRoles, requiredPermissions, mustHaveAll } = permissions;
-
-        const guild = options.guildId ? await useClient().guilds.fetch(options.guildId).catch(() => null) : null;
-        if (!guild && options.guildId) return false;
-
-        const channel = options.channelId ? await useClient().channels.fetch(options.channelId) : null;
-        if (!channel && options.channelId) return false;
-
-        const user = await useClient().users.fetch(options.userId).catch(() => null);
-        if (!user) return false;
-
-        const member = guild ? await guild.members.fetch(user).catch(() => null) : null;
-        if (!member && guild) return false;
-
-        const inAllowedUsers = !allowedUsers.length || allowedUsers.includes(user.id);
-        const hasRequiredRoles = requiredRoles.every(roleId => member?.roles.cache.has(roleId));
-        const inAllowedGuilds = !permissions.allowedGuilds.length || !guild || permissions.allowedGuilds.includes(guild.id);
-        const hasRequiredPermissions = !requiredPermissions
-            || (
-                channel
-                    ? !channel.isDMBased() && !!channel.permissionsFor(user)?.has(requiredPermissions)
-                    : !!member?.permissions.has(requiredPermissions)
-            );
-
-        if (mustHaveAll) {
-            return inAllowedUsers && hasRequiredRoles && inAllowedGuilds && hasRequiredPermissions;
-        } else {
-            return inAllowedUsers || hasRequiredRoles || inAllowedGuilds || hasRequiredPermissions;
+        if (!permissions) {
+            return false;
+        } else if (permissions === 'default') {
+            return KirinClient.config.hasPermission(options);
         }
+
+        return KirinClient.hasPermission({
+            ...options,
+            permissions: permissions
+        });
     }
 
     public async save(): Promise<void> {
@@ -146,34 +98,17 @@ export class ServerConfig implements ServerConfig.Data {
 }
 
 export namespace ServerConfig {
-    export interface PermissionCheckOptions {
-        action: keyof ServerConfig.Data['permissions'];
-        userId: string;
-        guildId?: string;
-        channelId?: string;
-    }
-
-    export type ActionType = 'start'|'stop'|'restart';
-
     export interface Data {
-        permissions: Record<ActionType|'view'|'manage', ActionPermissionsData|null>;
+        permissions: Record<GlobalConfig.ActionType, GlobalConfig.ActionPermissionsData|'default'|null>;
         statusMessages: StatusMessageData[];
         logChannels: LogChannelData[];
-    }
-
-    export interface ActionPermissionsData {
-        allowedUsers: string[];
-        requiredRoles: string[];
-        allowedGuilds: string[];
-        requiredPermissions: PermissionResolvable;
-        mustHaveAll: boolean;
     }
 
     export interface StatusMessageData {
         guildId: string;
         channelId: string;
         messageId: string;
-        allowedActions: ActionType[];
+        allowedActions: GlobalConfig.ServerActionType[];
     }
 
     export interface LogChannelData {
@@ -182,21 +117,11 @@ export namespace ServerConfig {
         type: 'stdout'|'stderr'|'both';
     }
 
-    export const schema = z.object({
-        permissions: z.record(
-            z.enum(['view', 'manage', 'start', 'stop', 'restart']),
-            z.object({
-                allowedUsers: z.string().array(),
-                requiredRoles: z.string().array(),
-                allowedGuilds: z.string().array(),
-                requiredPermissions: z.any(),
-                mustHaveAll: z.boolean()
-            }),
-        ),
+    export const schema = GlobalConfig.schema.extend({
         statusMessages: z.object({
             guildId: z.string(),
             channelId: z.string(),
-            message: z.string(),
+            messageId: z.string(),
         })
         .array(),
         logChannels: z.object({

@@ -6,6 +6,7 @@ import { BaseModule } from 'reciple';
 import { ServerConfig } from '../utils/_ServerConfig.js';
 import type { Logger } from '@prtty/print';
 import { stripVTControlCharacters } from 'node:util';
+import { GlobalConfig } from '../utils/_GlobalConfig.js';
 
 export class KirinClient extends BaseModule {
     public root: string = path.join(path.dirname(fileURLToPath(import.meta.url)), '../../servers');
@@ -13,6 +14,7 @@ export class KirinClient extends BaseModule {
     public logger: Logger = useLogger().clone({ label: 'Kirin' });
 
     public configurations: Collection<string, ServerConfig> = new Collection();
+    public config: GlobalConfig = new GlobalConfig(path.join(this.root, 'kirin.global.yml'));
 
     constructor() {
         super();
@@ -25,11 +27,13 @@ export class KirinClient extends BaseModule {
     }
 
     public async onEnable(): Promise<void> {
+        await this.config.read();
         await this.kirin.load();
     }
 
     public async onDisable(): Promise<void> {
         await this.kirin.save();
+        await this.config.save();
     }
 
     public async restart(server: Server): Promise<void> {
@@ -72,6 +76,38 @@ export class KirinClient extends BaseModule {
         }
 
         return servers;
+    }
+
+    public async hasPermission(options: KirinClient.PermissionCheckOptions): Promise<boolean> {
+        const { allowedUsers, requiredRoles, allowedGuilds, requiredPermissions, mustHaveAll } = options.permissions;
+
+        const guild = options.guildId ? await useClient().guilds.fetch(options.guildId).catch(() => null) : null;
+        if (!guild && options.guildId) return false;
+
+        const channel = options.channelId ? await useClient().channels.fetch(options.channelId) : null;
+        if (!channel && options.channelId) return false;
+
+        const user = await useClient().users.fetch(options.userId).catch(() => null);
+        if (!user) return false;
+
+        const member = guild ? await guild.members.fetch(user).catch(() => null) : null;
+        if (!member && guild) return false;
+
+        const inAllowedUsers = !allowedUsers.length || allowedUsers.includes(user.id);
+        const hasRequiredRoles = requiredRoles.every(roleId => member?.roles.cache.has(roleId));
+        const inAllowedGuilds = !allowedGuilds.length || !guild || allowedGuilds.includes(guild.id);
+        const hasRequiredPermissions = !requiredPermissions
+            || (
+                channel
+                    ? !channel.isDMBased() && !!channel.permissionsFor(user)?.has(requiredPermissions)
+                    : !!member?.permissions.has(requiredPermissions)
+            );
+
+        if (mustHaveAll) {
+            return inAllowedUsers && hasRequiredRoles && inAllowedGuilds && hasRequiredPermissions;
+        } else {
+            return inAllowedUsers || hasRequiredRoles || inAllowedGuilds || hasRequiredPermissions;
+        }
     }
 
     public async onServerCreate(server: Server): Promise<void> {
@@ -122,8 +158,15 @@ export namespace KirinClient {
         type?: Server.Type;
     }
 
-    export interface FilterServersByPermissionOptions extends ServerConfig.PermissionCheckOptions {
+    export interface FilterServersByPermissionOptions extends GlobalConfig.PermissionCheckOptions {
         servers?: Collection<string, Server>;
+    }
+
+    export interface PermissionCheckOptions {
+        permissions: GlobalConfig.ActionPermissionsData;
+        userId: string;
+        guildId?: string;
+        channelId?: string;
     }
 }
 
