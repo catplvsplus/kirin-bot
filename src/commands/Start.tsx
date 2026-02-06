@@ -48,6 +48,11 @@ export class StartCommand extends SlashCommandModule {
     public async execute(data: SlashCommand.ExecuteData): Promise<void> {
         const { interaction } = data;
 
+        if (!interaction.inCachedGuild()) {
+            await interaction.reply('❌ This command can only be used in a server with the bot in it.');
+            return;
+        }
+
         const server = KirinClient.kirin.get(interaction.options.getString('server', true));
         const config = KirinClient.configurations.get(server?.id ?? '');
 

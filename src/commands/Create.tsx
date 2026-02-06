@@ -38,6 +38,11 @@ export class CreateCommand extends SlashCommandModule {
     public async execute(data: SlashCommand.ExecuteData): Promise<void> {
         const { interaction } = data;
 
+        if (!interaction.inCachedGuild()) {
+            await interaction.reply('❌ This command can only be used in a server with the bot in it.');
+            return;
+        }
+
         const serverData: Partial<Server.Data> & { id: string; name: string; type: Server.Type; persist: boolean; } = {
             id: slug(interaction.options.getString('id', true), false),
             name: interaction.options.getString('name', true),

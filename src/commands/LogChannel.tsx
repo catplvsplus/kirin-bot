@@ -47,6 +47,11 @@ export class LogChannelCommand extends SlashCommandModule {
     public async execute(data: SlashCommand.ExecuteData): Promise<void> {
         const { interaction } = data;
 
+        if (!interaction.inCachedGuild()) {
+            await interaction.reply('❌ This command can only be used in a server with the bot in it.');
+            return;
+        }
+
         const serverId = interaction.options.getString('server', true);
         const server = KirinClient.kirin.get(serverId);
         const config = KirinClient.configurations.get(serverId);
