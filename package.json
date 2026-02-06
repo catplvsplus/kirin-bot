@@ -12,10 +12,10 @@
     "@prtty/print": "^1.1.1",
     "@reciple/core": "^10.0.1",
     "@reciple/jsx": "^10.0.8",
-    "@reciple/modules": "^10.0.27",
+    "@reciple/modules": "^10.0.28",
     "discord.js": "^14.25.1",
     "github-slugger": "^2.0.0",
-    "reciple": "^10.0.26",
+    "reciple": "^10.0.27",
     "tinyexec": "^1.0.2",
     "yaml": "^2.8.2",
     "zod": "^4.3.6"
@@ -25,5 +25,7 @@
     "nodemon": "^3.1.11",
     "typescript": "^5.9.3"
   },
-  "trustedDependencies": ["raknet-native"]
+  "trustedDependencies": [
+    "raknet-native"
+  ]
 }
