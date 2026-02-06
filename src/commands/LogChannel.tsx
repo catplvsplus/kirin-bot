@@ -48,7 +48,10 @@ export class LogChannelCommand extends SlashCommandModule {
         const { interaction } = data;
 
         if (!interaction.inCachedGuild()) {
-            await interaction.reply('❌ This command can only be used in a server with the bot in it.');
+            await interaction.reply({
+                flags: MessageFlags.Ephemeral,
+                content: '❌ This command can only be used in a server with the bot in it.'
+            });
             return;
         }
 
