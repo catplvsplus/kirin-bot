@@ -89,7 +89,7 @@ export class StartCommand extends SlashCommandModule {
         }
 
         await interaction.editReply('⌛ Server is starting...');
-        await server.start();
+        await server.start().catch(() => null);
 
         await interaction.editReply({
             content: server.isRunning
