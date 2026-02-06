@@ -15,15 +15,12 @@ export class ServersCommand extends SlashCommandModule {
     public async execute(data: SlashCommand.ExecuteData): Promise<void> {
         const { interaction } = data;
 
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
         if (!interaction.inCachedGuild()) {
-            await interaction.reply({
-                flags: MessageFlags.Ephemeral,
-                content: '❌ This command can only be used in a server with the bot in it.'
-            });
+            await interaction.editReply('❌ This command can only be used in a server with the bot in it.');
             return;
         }
-
-        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
         const servers = await KirinClient.filterByPermission({
             action: 'view',

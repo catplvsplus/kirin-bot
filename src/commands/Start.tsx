@@ -47,36 +47,27 @@ export class StartCommand extends SlashCommandModule {
     public async execute(data: SlashCommand.ExecuteData): Promise<void> {
         const { interaction } = data;
 
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
         if (!interaction.inCachedGuild()) {
-            await interaction.reply({
-                flags: MessageFlags.Ephemeral,
-                content: '❌ This command can only be used in a server with the bot in it.'
-            });
+            await interaction.editReply('❌ This command can only be used in a server with the bot in it.');
             return;
         }
 
         const server = KirinClient.kirin.get(interaction.options.getString('server', true));
         const config = KirinClient.configurations.get(server?.id ?? '');
 
-        if (!server) {
-            await interaction.reply({
-                flags: MessageFlags.Ephemeral,
-                content: '❌ Server not found.'
-            });
+        if (!server || !config) {
+            await interaction.editReply('❌ Server not found.');
             return;
         }
 
         if (server.isRunning) {
-            await interaction.reply({
-                flags: MessageFlags.Ephemeral,
-                content: '❌ Server is already running.'
-            });
+            await interaction.editReply('❌ Server is already running.');
             return;
         }
 
-        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-
-        const hasPermission = await config?.hasPermission({
+        const hasPermission = await config.hasPermission({
             action: 'start',
             userId: interaction.user.id,
             channelId: interaction.channelId,

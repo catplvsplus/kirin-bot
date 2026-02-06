@@ -148,6 +148,17 @@ export class KirinClient extends BaseModule {
 
         this.logger.log(`Unloaded configuration for "${server.name}"`);
     }
+
+    public async reloadConfigurations(): Promise<void> {
+        await this.config.read();
+        await this.kirin.load();
+
+        for (const server of this.kirin.servers.values()) {
+            const config = this.configurations.get(server.id);
+
+            await config?.read();
+        }
+    }
 }
 
 export namespace KirinClient {

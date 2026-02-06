@@ -38,11 +38,23 @@ export class CreateCommand extends SlashCommandModule {
     public async execute(data: SlashCommand.ExecuteData): Promise<void> {
         const { interaction } = data;
 
+        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
         if (!interaction.inCachedGuild()) {
-            await interaction.reply({
-                flags: MessageFlags.Ephemeral,
-                content: '❌ This command can only be used in a server with the bot in it.'
-            });
+            await interaction.editReply('❌ This command can only be used in a server with the bot in it.');
+            return;
+        }
+
+
+        const hasPermission = await KirinClient.config.hasPermission({
+            action: 'manage',
+            userId: interaction.user.id,
+            guildId: interaction.guildId,
+            channelId: interaction.channelId
+        });
+
+        if (!hasPermission) {
+            await interaction.editReply('❌ You do not have permission to use this command.');
             return;
         }
 
@@ -54,14 +66,9 @@ export class CreateCommand extends SlashCommandModule {
         };
 
         if (KirinClient.kirin.get(serverData.id)) {
-            await interaction.reply({
-                flags: MessageFlags.Ephemeral,
-                content: `A server with an id ${inlineCode(serverData.id)} already exists.`,
-            });
+            await interaction.editReply(`❌ A server with an id ${inlineCode(serverData.id)} already exists.`);
             return;
         }
-
-        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
         const selectFolder = new FolderSelector({
             cwd: path.resolve(KirinClient.kirin.root),
