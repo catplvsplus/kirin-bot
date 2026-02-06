@@ -98,22 +98,22 @@ export namespace GlobalConfig {
     }
 
     export interface ActionPermissionsData {
-        allowedUsers: string[];
-        requiredRoles: string[];
-        allowedGuilds: string[];
-        requiredPermissions: PermissionResolvable;
-        mustHaveAll: boolean;
+        allowedUsers?: string[];
+        requiredRoles?: string[];
+        allowedGuilds?: string[];
+        requiredPermissions?: PermissionResolvable;
+        mustHaveAll?: boolean;
     }
 
     export const schema = z.object({
         permissions: z.record(
             z.enum(['view', 'manage', 'start', 'stop', 'restart']),
             z.object({
-                allowedUsers: z.string().array(),
-                requiredRoles: z.string().array(),
-                allowedGuilds: z.string().array(),
-                requiredPermissions: z.any(),
-                mustHaveAll: z.boolean()
+                allowedUsers: z.string().array().optional(),
+                requiredRoles: z.string().array().optional(),
+                allowedGuilds: z.string().array().optional(),
+                requiredPermissions: z.any().optional(),
+                mustHaveAll: z.boolean().optional()
             }),
         )
     });

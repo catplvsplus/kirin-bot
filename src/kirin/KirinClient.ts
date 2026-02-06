@@ -93,9 +93,9 @@ export class KirinClient extends BaseModule {
         const member = guild ? await guild.members.fetch(user).catch(() => null) : null;
         if (!member && guild) return false;
 
-        const inAllowedUsers = !allowedUsers.length || allowedUsers.includes(user.id);
-        const hasRequiredRoles = requiredRoles.every(roleId => member?.roles.cache.has(roleId));
-        const inAllowedGuilds = !allowedGuilds.length || !guild || allowedGuilds.includes(guild.id);
+        const inAllowedUsers = !allowedUsers?.length || allowedUsers.includes(user.id);
+        const hasRequiredRoles = !requiredRoles?.length || requiredRoles.every(roleId => member?.roles.cache.has(roleId));
+        const inAllowedGuilds = !allowedGuilds?.length || !guild || allowedGuilds.includes(guild.id);
         const hasRequiredPermissions = !requiredPermissions
             || (
                 channel
