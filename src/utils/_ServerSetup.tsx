@@ -39,16 +39,32 @@ export class ServerSetup {
         let promise = new Promise<Server.Data|null>(resolve => handleConfirm = resolve);
 
         componentCollector.on('collect', async interaction => {
-            const id = interaction.customId as 'cancel'|'finish'|'setup-software'|'ping-interval'|'toggle-persist';
+            const id = interaction.customId as 'cancel'|'finish'|'name'|'setup-software'|'ping-interval'|'toggle-persist';
 
             switch (id) {
+                case 'name':
+                    await interaction.showModal(this.createNameModal());
+
+                    const nameInteraction = await interaction.awaitModalSubmit({
+                        filter: interaction => interaction.customId === 'name',
+                        time: 1000 * 60 * 5
+                    }).catch(() => null);
+
+                    if (!nameInteraction) break;
+
+                    this.handleNameModal(nameInteraction);
+                    break;
                 case 'setup-software':
-                    await interaction.showModal(this.createModal());
+                    await interaction.showModal(this.createSetupSoftwareModal());
 
-                    const modalInteraction = await interaction.awaitModalSubmit({ time: 1000 * 60 * 5 }).catch(() => null);
-                    if (!modalInteraction) break;
+                    const setupSoftwareInteraction = await interaction.awaitModalSubmit({
+                        filter: interaction => interaction.customId === 'setup-software',
+                        time: 1000 * 60 * 5
+                    }).catch(() => null);
 
-                    this.handleSetupSoftwareModal(modalInteraction);
+                    if (!setupSoftwareInteraction) break;
+
+                    this.handleSetupSoftwareModal(setupSoftwareInteraction);
                     break;
                 case 'ping-interval':
                     const interval = Number(interaction.isStringSelectMenu() && interaction.values[0]);
@@ -117,8 +133,14 @@ export class ServerSetup {
             components: <>
                 <Container>
                     <TextDisplay>
-                        <Heading level={2}>{this.data.name}</Heading>
+                        <SubText>ID: {this.data.id}</SubText>
                     </TextDisplay>
+                    <Section>
+                        <TextDisplay>
+                            <Heading level={2}>{this.data.name}</Heading>
+                        </TextDisplay>
+                        <Button style={ButtonStyle.Secondary} customId='name' disabled={options?.disabled}>Edit</Button>
+                    </Section>
                     <Separator/>
                     <Section>
                         <TextDisplay>
@@ -179,6 +201,13 @@ export class ServerSetup {
         };
     }
 
+    public async handleNameModal(interaction: ModalSubmitInteraction): Promise<void> {
+        this.data.name = interaction.fields.getTextInputValue('server-name');
+
+        await interaction.deferUpdate();
+        await interaction.editReply(this.createMessageData());
+    }
+
     public async handleSetupSoftwareModal(interaction: ModalSubmitInteraction): Promise<void> {
         this.files = this.disableFileUpload ? null : interaction.fields.getUploadedFiles('server-executable', false);
 
@@ -230,7 +259,24 @@ export class ServerSetup {
         );
     }
 
-    public createModal(): ModalBuilder {
+    public createNameModal(): ModalBuilder {
+        return <Modal customId='name' title='Server Information'>
+            <Label
+                label='Server Name'
+                description='This is the name of the server. (Used when displaying the server in commands and messages)'
+            >
+                <TextInput
+                    customId='server-name'
+                    style={TextInputStyle.Short}
+                    placeholder='My Minecraft Server'
+                    value={this.data.name}
+                    required={true}
+                />
+            </Label>
+        </Modal>
+    }
+
+    public createSetupSoftwareModal(): ModalBuilder {
         return (
             <Modal customId='setup-software' title='Server Software Setup'>
                 {
