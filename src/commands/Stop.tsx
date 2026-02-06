@@ -1,7 +1,9 @@
 import { InteractionListenerBuilder, InteractionListenerType, type InteractionListenerData } from '@reciple/modules';
 import { SlashCommandBuilder, SlashCommandModule, type SlashCommand } from 'reciple';
-import { inlineCode, InteractionContextType, MessageFlags, PermissionFlagsBits } from 'discord.js';
+import { InteractionContextType, PermissionFlagsBits } from 'discord.js';
 import KirinClient from '../kirin/KirinClient.js';
+import OnServerAction from '../events/OnServerAction.js';
+import { MessageFlags } from 'discord.js';
 
 export class StopCommand extends SlashCommandModule {
     public data = new SlashCommandBuilder()
@@ -46,47 +48,18 @@ export class StopCommand extends SlashCommandModule {
     public async execute(data: SlashCommand.ExecuteData): Promise<void> {
         const { interaction } = data;
 
-        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-
-        if (!interaction.inCachedGuild()) {
-            await interaction.editReply('❌ This command can only be used in a server with the bot in it.');
-            return;
-        }
-
         const server = KirinClient.kirin.get(interaction.options.getString('server', true));
         const config = KirinClient.configurations.get(server?.id ?? '');
 
         if (!server || !config) {
-            await interaction.editReply('❌ Server not found.');
+            await interaction.reply({
+                flags: MessageFlags.Ephemeral,
+                content: '❌ Server not found.'
+            });
             return;
         }
 
-        if (!server.isRunning) {
-            await interaction.editReply('❌ Server is already stopped.');
-            return;
-        }
-
-        const hasPermission = await config.hasPermission({
-            action: 'stop',
-            userId: interaction.user.id,
-            channelId: interaction.channelId,
-            guildId: interaction.guildId ?? undefined
-        });
-
-        if (!hasPermission) {
-            await interaction.editReply('❌ You do not have permission to stop this server.');
-            return;
-        }
-
-        await interaction.editReply('⌛ Server is stopping...');
-
-        const exitCode = await server.stop();
-
-        await interaction.editReply({
-            content: !exitCode
-                ? `✅ Server stopped successfully.`
-                : `❌ Server closed with exit code ${inlineCode(String(exitCode))}.`
-        }).catch(() => null);
+        await OnServerAction.stopInteraction(interaction, { server, config });
     }
 }
 

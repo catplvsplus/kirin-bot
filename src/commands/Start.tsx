@@ -2,6 +2,7 @@ import { InteractionListenerBuilder, InteractionListenerType, type InteractionLi
 import { SlashCommandBuilder, SlashCommandModule, type SlashCommand } from 'reciple';
 import KirinClient from '../kirin/KirinClient.js';
 import { InteractionContextType, MessageFlags, PermissionFlagsBits } from 'discord.js';
+import OnServerAction from '../events/OnServerAction.js';
 
 export class StartCommand extends SlashCommandModule {
     public data = new SlashCommandBuilder()
@@ -47,46 +48,18 @@ export class StartCommand extends SlashCommandModule {
     public async execute(data: SlashCommand.ExecuteData): Promise<void> {
         const { interaction } = data;
 
-        await interaction.deferReply({ flags: MessageFlags.Ephemeral });
-
-        if (!interaction.inCachedGuild()) {
-            await interaction.editReply('❌ This command can only be used in a server with the bot in it.');
-            return;
-        }
-
         const server = KirinClient.kirin.get(interaction.options.getString('server', true));
         const config = KirinClient.configurations.get(server?.id ?? '');
 
         if (!server || !config) {
-            await interaction.editReply('❌ Server not found.');
+            await interaction.reply({
+                flags: MessageFlags.Ephemeral,
+                content: '❌ Server not found.'
+            });
             return;
         }
 
-        if (server.isRunning) {
-            await interaction.editReply('❌ Server is already running.');
-            return;
-        }
-
-        const hasPermission = await config.hasPermission({
-            action: 'start',
-            userId: interaction.user.id,
-            channelId: interaction.channelId,
-            guildId: interaction.guildId ?? undefined
-        });
-
-        if (!hasPermission) {
-            await interaction.editReply('❌ You do not have permission to start this server.');
-            return;
-        }
-
-        await interaction.editReply('⌛ Server is starting...');
-        await server.start().catch(() => null);
-
-        await interaction.editReply({
-            content: server.isRunning
-                ? `✅ Server started successfully.`
-                : `❌ Server failed to start.`
-        }).catch(() => null);
+        await OnServerAction.startInteraction(interaction, { server, config });
     }
 }
 

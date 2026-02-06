@@ -31,9 +31,14 @@ export class KirinClient extends BaseModule {
         await this.kirin.load();
     }
 
+    public async onReady(): Promise<void> {
+        await this.updateStatusMessages();
+    }
+
     public async onDisable(): Promise<void> {
         await this.kirin.save();
         await this.config.save();
+        await this.updateStatusMessages(true);
     }
 
     public async restart(server: Server): Promise<void> {
@@ -110,6 +115,12 @@ export class KirinClient extends BaseModule {
         }
     }
 
+    public async updateStatusMessages(disabled?: boolean): Promise<void> {
+        for (const config of this.configurations.values()) {
+            await config.messages.updateStatusMessage(disabled);
+        }
+    }
+
     public async onServerCreate(server: Server): Promise<void> {
         const config = new ServerConfig(path.join(
             this.kirin.root,
@@ -128,7 +139,7 @@ export class KirinClient extends BaseModule {
             for (const channel of channels) {
                 await channel.send(stripVTControlCharacters(message)).catch(() => null);
             }
-        }
+        };
 
         server.on('processStdout', data => broadcast(data));
         server.on('processStderr', data => broadcast(data));
@@ -142,6 +153,7 @@ export class KirinClient extends BaseModule {
         const config = this.configurations.get(server.id);
 
         if (config) {
+            await config.messages.updateStatusMessage(true);
             await config.save();
 
             this.configurations.delete(server.id);
