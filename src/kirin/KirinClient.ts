@@ -136,6 +136,10 @@ export class KirinClient extends BaseModule {
         const broadcast = async (message: string) => {
             const channels = await config.fetchLogChannels();
 
+            if (message.includes(`${server.port}`) && server.status === 'starting') {
+                await server.ping.ping().catch(() => null);
+            }
+
             for (const channel of channels) {
                 await channel.send(stripVTControlCharacters(message)).catch(() => null);
             }
