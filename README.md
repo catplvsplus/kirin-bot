@@ -8,6 +8,7 @@ A Minecraft server management tool in Discord. Built using [reciple](https://git
 - Manage start, stop, and restart permissions.
 - View server status of your Minecraft server in Discord.
 - View server logs of your Minecraft server in Discord.
+- Supports Java and Bedrock server protocols.
 
 ## Prerequisites
 
