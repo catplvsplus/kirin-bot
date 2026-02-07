@@ -78,7 +78,7 @@ export class GlobalConfig {
             return;
         }
 
-        this.data = parse(await readFile(this.path, 'utf-8'));
+        this.data = GlobalConfig.schema.parse(parse(await readFile(this.path, 'utf-8')));
     }
 }
 

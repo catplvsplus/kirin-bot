@@ -81,7 +81,7 @@ export class ServerConfig implements ServerConfig.Data {
             return;
         }
 
-        this.data = parse(await readFile(this.path, 'utf-8'));
+        this.data = ServerConfig.schema.parse(parse(await readFile(this.path, 'utf-8')));
     }
 }
 
