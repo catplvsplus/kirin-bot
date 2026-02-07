@@ -94,8 +94,8 @@ export class ServerSetup {
                     }
 
                     await interaction.reply({
+                        flags: MessageFlags.Ephemeral,
                         content: `Server setup is not complete. Please fix the following fields: ${this.getErroredFields().map(f => inlineCode(f)).join(' ')}`,
-                        ephemeral: true
                     });
                     break;
             }

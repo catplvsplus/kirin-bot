@@ -55,6 +55,7 @@ Once the bot is running, you can use the following commands in your Discord serv
 - `/start` Start your Minecraft server.
 - `/stop` Stop your Minecraft server.
 - `/restart` Restart your Minecraft server.
+- `/status` View the status of your Minecraft server.
 - `/create` Create a new Minecraft server entry.
 - `/delete` Deletes a minecraft server from the list. (Requires global manage permission)
 - `/log-channel` Manage a server's log channels.
