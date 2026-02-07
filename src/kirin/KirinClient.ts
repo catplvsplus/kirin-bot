@@ -68,7 +68,7 @@ export class KirinClient extends BaseModule {
         const servers = new Collection<string, Server>();
 
         for (const server of options.servers?.values() ?? this.kirin.servers.values()) {
-            const config = this.configurations.get(server.id);
+            const config = options.level == 'global' ? this.config : this.configurations.get(server.id);
 
             if (config && await config.hasPermission({
                 action: options.action,
@@ -187,6 +187,7 @@ export namespace KirinClient {
     }
 
     export interface FilterServersByPermissionOptions extends GlobalConfig.PermissionCheckOptions {
+        level?: 'global'|'server';
         servers?: Collection<string, Server>;
     }
 
