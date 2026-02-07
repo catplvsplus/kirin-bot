@@ -105,7 +105,21 @@ export namespace ServerConfig {
         type: 'stdout'|'stderr'|'both';
     }
 
-    export const schema = GlobalConfig.schema.extend({
+    export const schema = z.object({
+        permissions: z.record(
+            z.enum(['view', 'manage', 'start', 'stop', 'restart']),
+            z.nullable(
+                z.object({
+                    allowedUsers: z.string().array().optional(),
+                    requiredRoles: z.string().array().optional(),
+                    allowedGuilds: z.string().array().optional(),
+                    requiredPermissions: z.any().optional(),
+                    mustHaveAll: z.boolean().optional()
+                }).or(
+                    z.literal('default')
+                )
+            )
+        ),
         statusMessages: z.object({
             guildId: z.string(),
             channelId: z.string(),
