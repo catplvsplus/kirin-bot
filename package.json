@@ -8,7 +8,7 @@
     "dev": "nodemon"
   },
   "dependencies": {
-    "@kirinmc/core": "^0.0.5",
+    "@kirinmc/core": "^0.0.6",
     "@prtty/print": "^1.1.1",
     "@reciple/core": "^10.0.1",
     "@reciple/jsx": "^10.0.8",
@@ -21,7 +21,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@types/node": "^25.2.1",
+    "@types/node": "^25.2.3",
     "nodemon": "^3.1.11",
     "typescript": "^5.9.3"
   },
