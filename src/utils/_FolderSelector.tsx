@@ -4,7 +4,10 @@ import { mkdir, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 
 export class FolderSelector {
+    private readonly _cwd: string;
+
     public cwd: string;
+    public allowPastCwd: boolean;
     public interaction: RepliableInteraction;
 
     public items: string[] = [];
@@ -26,7 +29,8 @@ export class FolderSelector {
     }
 
     constructor(options: FolderSelector.Options) {
-        this.cwd = options.cwd;
+        this.cwd = this._cwd = options.cwd;
+        this.allowPastCwd = options.allowPastCwd ?? true;
         this.interaction = options.interaction;
     }
 
@@ -120,6 +124,8 @@ export class FolderSelector {
     }
 
     public async chdir(dir: string): Promise<void> {
+        if (!this.allowPastCwd && this.isPastCwd(dir)) return;
+
         this.cwd = dir;
         this.items = [];
 
@@ -143,6 +149,13 @@ export class FolderSelector {
         await this.chdir(this.cwd);
     }
 
+    public isPastCwd(dir: string): boolean {
+        const cwd = path.resolve(dir).split(path.sep);
+        const orig = path.resolve(this._cwd).split(path.sep);
+
+        return !orig.every((item, index) => item === cwd[index]) || orig.length > cwd.length;
+    }
+
     public async createMessageData(options?: FolderSelector.MessageDataOptions): Promise<InteractionEditReplyOptions> {
         return {
             ...options?.base,
@@ -163,7 +176,13 @@ export class FolderSelector {
                     <Separator/>
                     <Section>
                         <TextDisplay>📁 ../</TextDisplay>
-                        <Button style={ButtonStyle.Secondary} customId={`open:-1`} disabled={options?.disabled}>Open</Button>
+                        <Button
+                            style={ButtonStyle.Secondary}
+                            customId={`open:-1`}
+                            disabled={options?.disabled || (this.isPastCwd(path.join(this.cwd, '..')) && !this.allowPastCwd)}
+                        >
+                                Open
+                        </Button>
                     </Section>
                     {
                         this.currentPage.map((item, index) => (
@@ -211,6 +230,7 @@ export namespace FolderSelector {
 
     export interface Options {
         cwd: string;
+        allowPastCwd?: boolean;
         interaction: RepliableInteraction;
     }
 

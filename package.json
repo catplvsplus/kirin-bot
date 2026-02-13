@@ -8,7 +8,7 @@
     "dev": "nodemon"
   },
   "dependencies": {
-    "@kirinmc/core": "^0.0.6",
+    "@kirinmc/core": "^0.0.7",
     "@prtty/print": "^1.1.1",
     "@reciple/core": "^10.0.1",
     "@reciple/jsx": "^10.0.8",

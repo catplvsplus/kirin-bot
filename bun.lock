@@ -5,7 +5,7 @@
     "": {
       "name": "kirin-bot",
       "dependencies": {
-        "@kirinmc/core": "^0.0.6",
+        "@kirinmc/core": "^0.0.7",
         "@prtty/print": "^1.1.1",
         "@reciple/core": "^10.0.1",
         "@reciple/jsx": "^10.0.8",
@@ -78,7 +78,7 @@
 
     "@jsprismarine/jsbinaryutils": ["@jsprismarine/jsbinaryutils@2.1.4", "", {}, "sha512-LFMbAJsHEiq5UJwPzrHYZbCkZ/LZEhV76SYXPDjcQLosqVwcf0yyyr+ICxT4j/d4xPH7vDSvWCqOuFRsSv9wYw=="],
 
-    "@kirinmc/core": ["@kirinmc/core@0.0.6", "", { "dependencies": { "@discordjs/collection": "^2.1.1", "@dotenvx/dotenvx": "^1.52.0", "args-tokenizer": "^0.3.0", "bedrock-protocol": "^3.52.0", "minecraft-protocol": "^1.63.0", "tinyexec": "^1.0.2", "zod": "^4.3.6" } }, "sha512-O+SwC51RKq+OKsT9O+hdyyWkdpRP/fCy9G8wFlFwRCxNI1aLenSUxb5pNErMhztiChR0CiBwPRlMqrxwmHXaRw=="],
+    "@kirinmc/core": ["@kirinmc/core@0.0.7", "", { "dependencies": { "@discordjs/collection": "^2.1.1", "@dotenvx/dotenvx": "^1.52.0", "args-tokenizer": "^0.3.0", "bedrock-protocol": "^3.52.0", "minecraft-protocol": "^1.63.0", "tinyexec": "^1.0.2", "zod": "^4.3.6" } }, "sha512-As59ZOi3Q/KtFOmV8VNvzfrcIWDDumIgmgDyrXKkNJmFgK4pb9ssBgOl6aYgXS4oICFjmEWHeZ5h2FuyRAQ3qQ=="],
 
     "@napi-rs/wasm-runtime": ["@napi-rs/wasm-runtime@1.1.1", "", { "dependencies": { "@emnapi/core": "^1.7.1", "@emnapi/runtime": "^1.7.1", "@tybys/wasm-util": "^0.10.1" } }, "sha512-p64ah1M1ld8xjWv3qbvFwHiFVWrq1yFvV4f7w+mzaqiR4IlSgkqhcRdHwsGgomwzBH51sRY4NEowLxnaBjcW/A=="],
 
