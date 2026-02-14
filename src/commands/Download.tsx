@@ -2,9 +2,10 @@ import { InteractionListenerBuilder, InteractionListenerType, type InteractionLi
 import { ButtonStyle, Colors, ComponentType, MessageFlags } from 'discord.js';
 import { SlashCommandBuilder, SlashCommandModule, type SlashCommand } from 'reciple';
 import KirinClient from '../kirin/KirinClient.js';
-import { ActionRow, Button, CodeBlock, Container, Heading, InlineCode, LineBreak, SubText, TextDisplay } from '@reciple/jsx';
+import { ActionRow, Button, CodeBlock, Container, Heading, InlineCode, LineBreak, TextDisplay } from '@reciple/jsx';
 import { FolderSelector } from '../utils/_FolderSelector.js';
 import path from 'node:path';
+import { Format } from '@reciple/utils';
 
 export class DownloadCommand extends SlashCommandModule {
     public data = new SlashCommandBuilder()
@@ -149,6 +150,8 @@ export class DownloadCommand extends SlashCommandModule {
         });
 
         try {
+            let lastUpdated = Date.now();
+
             const location = await KirinClient.kirin.downloads.download(url.toString(), {
                 directory,
                 filename: filename ?? undefined,
@@ -156,7 +159,19 @@ export class DownloadCommand extends SlashCommandModule {
                     ? {
                         type: 'sha256',
                         hash: sha256
-                    } : undefined
+                    } : undefined,
+                onProgress: progress => {
+                    if (Date.now() - lastUpdated > 1000) {
+                        const percent = progress.size ? Math.round((progress.progress / progress.size) * 100) : null;
+
+                        lastUpdated = Date.now();
+                        interaction.editReply({
+                            components: <>
+                                <TextDisplay>⏳ Downloading file <InlineCode>{percent ? `${percent}%` : `${Format.bytes(progress.progress)}`}</InlineCode></TextDisplay>
+                            </>
+                        }).catch(() => null);
+                    }
+                }
             });
 
             await interaction.editReply({
@@ -170,9 +185,8 @@ export class DownloadCommand extends SlashCommandModule {
             await interaction.editReply({
                 components: <>
                     <TextDisplay>
-                        ❌ Failed to download file.
+                        ❌ {err instanceof Error ? err.message : String(err)}
                         <LineBreak/>
-                        <SubText>{err instanceof Error ? err.message : String(err)}</SubText>
                     </TextDisplay>
                 </>
             });

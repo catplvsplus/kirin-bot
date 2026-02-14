@@ -8,11 +8,12 @@
     "dev": "nodemon"
   },
   "dependencies": {
-    "@kirinmc/core": "^0.0.7",
+    "@kirinmc/core": "^0.0.8",
     "@prtty/print": "^1.1.1",
     "@reciple/core": "^10.0.1",
     "@reciple/jsx": "^10.0.8",
     "@reciple/modules": "^10.0.28",
+    "@reciple/utils": "^10.0.1",
     "discord.js": "^14.25.1",
     "github-slugger": "^2.0.0",
     "reciple": "^10.0.27",
