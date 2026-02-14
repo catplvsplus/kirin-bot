@@ -58,8 +58,10 @@ Once the bot is running, you can use the following commands in your Discord serv
 - `/status` View the status of your Minecraft server.
 - `/create` Create a new Minecraft server entry.
 - `/delete` Deletes a minecraft server from the list. (Requires global manage permission)
+- `/download` Download a file from a URL to a directory within a server.
 - `/log-channel` Manage a server's log channels.
 - `/add-status-message` Add a server status message to a channel.
+- `/reload` Reloads the server and global configurations.
 
 ## Configuration
 
