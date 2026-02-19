@@ -1,7 +1,7 @@
 import { SlashCommandBuilder, SlashCommandModule, type SlashCommand } from 'reciple';
 import KirinClient from '../kirin/KirinClient.js';
 import { ButtonStyle, Colors, ComponentType, MessageFlags, TextInputStyle, type InteractionEditReplyOptions, type ModalBuilder } from 'discord.js';
-import { InteractionListenerBuilder, InteractionListenerType, type InteractionListenerData } from '@reciple/modules';
+import { InteractionListenerBuilder, InteractionListenerType } from '@reciple/modules';
 import { ActionRow, Button, Container, Heading, InlineCode, Label, LineBreak, Modal, SubText, TextDisplay, TextInput } from '@reciple/jsx';
 import type { Server } from '@kirinmc/core';
 
@@ -17,7 +17,7 @@ export class DeleteCommand extends SlashCommandModule {
         )
         .toJSON();
 
-    public interactions: InteractionListenerData[] = [
+    public interactions: InteractionListenerBuilder<InteractionListenerType>[] = [
         new InteractionListenerBuilder()
             .setType(InteractionListenerType.Autocomplete)
             .setFilter(interaction => interaction.commandName === 'delete')
@@ -38,7 +38,6 @@ export class DeleteCommand extends SlashCommandModule {
                         .splice(0, 25)
                 );
             })
-            .toJSON()
     ]
 
     public async execute(data: SlashCommand.ExecuteData): Promise<void> {

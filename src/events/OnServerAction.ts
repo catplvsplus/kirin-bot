@@ -1,4 +1,4 @@
-import { InteractionListenerBuilder, InteractionListenerType, type InteractionListenerData } from '@reciple/modules';
+import { InteractionListenerBuilder, InteractionListenerType } from '@reciple/modules';
 import { BaseModule } from 'reciple';
 import type { GlobalConfig } from '../utils/_GlobalConfig.js';
 import KirinClient from '../kirin/KirinClient.js';
@@ -7,7 +7,7 @@ import type { ServerConfig } from '../utils/_ServerConfig.js';
 import { inlineCode, MessageFlags, type RepliableInteraction } from 'discord.js';
 
 export class OnServerAction extends BaseModule {
-    public interactions: InteractionListenerData[] = [
+    public interactions: InteractionListenerBuilder<InteractionListenerType>[] = [
         new InteractionListenerBuilder()
             .setType(InteractionListenerType.Button)
             .setFilter(i => i.customId.startsWith('server-action:'))
@@ -37,7 +37,7 @@ export class OnServerAction extends BaseModule {
                         return;
                 }
             })
-            .toJSON()
+            
     ];
 
     public async startInteraction(interaction: RepliableInteraction, options: OnServerAction.InteractionActionOptions) {

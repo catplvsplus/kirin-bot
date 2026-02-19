@@ -1,4 +1,4 @@
-import { InteractionListenerBuilder, InteractionListenerType, type InteractionListenerData } from '@reciple/modules';
+import { InteractionListenerBuilder, InteractionListenerType } from '@reciple/modules';
 import { SlashCommandBuilder, SlashCommandModule, type SlashCommand } from 'reciple';
 import KirinClient from '../kirin/KirinClient.js';
 import { InteractionContextType, MessageFlags, PermissionFlagsBits } from 'discord.js';
@@ -18,7 +18,7 @@ export class StartCommand extends SlashCommandModule {
         )
         .toJSON();
 
-    public interactions: InteractionListenerData[] = [
+    public interactions: InteractionListenerBuilder<InteractionListenerType>[] = [
         new InteractionListenerBuilder()
             .setType(InteractionListenerType.Autocomplete)
             .setFilter(interaction => interaction.commandName === 'start')
@@ -42,7 +42,6 @@ export class StartCommand extends SlashCommandModule {
                         .splice(0, 25)
                 );
             })
-            .toJSON()
     ];
 
     public async execute(data: SlashCommand.ExecuteData): Promise<void> {

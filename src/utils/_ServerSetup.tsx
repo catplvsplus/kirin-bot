@@ -194,7 +194,7 @@ export class ServerSetup {
                     <Separator/>
                     <ActionRow>
                         <Button style={ButtonStyle.Danger} customId='cancel' disabled={options?.disabled}>Cancel</Button>
-                        <Button style={ButtonStyle.Success} customId='finish' disabled={options?.disabled || !this.isComplete}>Finish</Button>
+                        <Button style={ButtonStyle.Success} customId='finish' disabled={options?.disabled || !this.isComplete}>Save</Button>
                     </ActionRow>
                 </Container>
             </>

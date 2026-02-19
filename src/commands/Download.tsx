@@ -1,4 +1,4 @@
-import { InteractionListenerBuilder, InteractionListenerType, type InteractionListenerData } from '@reciple/modules';
+import { InteractionListenerBuilder, InteractionListenerType } from '@reciple/modules';
 import { ButtonStyle, Colors, ComponentType, MessageFlags } from 'discord.js';
 import { SlashCommandBuilder, SlashCommandModule, type SlashCommand } from 'reciple';
 import KirinClient from '../kirin/KirinClient.js';
@@ -34,7 +34,7 @@ export class DownloadCommand extends SlashCommandModule {
         )
         .toJSON();
 
-    public interactions: InteractionListenerData[] = [
+    public interactions: InteractionListenerBuilder<InteractionListenerType>[] = [
         new InteractionListenerBuilder()
             .setType(InteractionListenerType.Autocomplete)
             .setFilter(interaction => interaction.commandName === 'download')
@@ -54,7 +54,6 @@ export class DownloadCommand extends SlashCommandModule {
                         .splice(0, 25)
                 );
             })
-            .toJSON()
     ];
 
     public async execute(data: SlashCommand.ExecuteData): Promise<void> {

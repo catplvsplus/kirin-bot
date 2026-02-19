@@ -1,4 +1,4 @@
-import { InteractionListenerBuilder, InteractionListenerType, type InteractionListenerData } from '@reciple/modules';
+import { InteractionListenerBuilder, InteractionListenerType } from '@reciple/modules';
 import { SlashCommandBuilder, SlashCommandModule, type SlashCommand } from 'reciple';
 import KirinClient from '../kirin/KirinClient.js';
 import { ServerSetup } from '../utils/_ServerSetup.js';
@@ -19,7 +19,7 @@ export class Configure extends SlashCommandModule {
         )
         .toJSON();
 
-    public interactions: InteractionListenerData[] = [
+    public interactions: InteractionListenerBuilder<InteractionListenerType>[] = [
         new InteractionListenerBuilder()
             .setType(InteractionListenerType.Autocomplete)
             .setFilter(interaction => interaction.commandName === 'configure')
@@ -38,8 +38,7 @@ export class Configure extends SlashCommandModule {
                         .map(s => ({ name: s.name || s.id, value: s.id }))
                         .splice(0, 25)
                 );
-            })
-            .toJSON(),
+            }),
     ];
 
     public async execute(data: SlashCommand.ExecuteData): Promise<void> {

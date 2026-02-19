@@ -2,7 +2,7 @@ import { MessageFlags } from 'discord.js';
 import { SlashCommandBuilder, SlashCommandModule, type SlashCommand } from 'reciple';
 import { GlobalConfig } from '../utils/_GlobalConfig.js';
 import KirinClient from '../kirin/KirinClient.js';
-import { InteractionListenerBuilder, InteractionListenerType, type InteractionListenerData } from '@reciple/modules';
+import { InteractionListenerBuilder, InteractionListenerType } from '@reciple/modules';
 
 export class StatusMessage extends SlashCommandModule {
     public data = new SlashCommandBuilder()
@@ -22,7 +22,7 @@ export class StatusMessage extends SlashCommandModule {
         )
         .toJSON();
 
-    public interactions: InteractionListenerData[] = [
+    public interactions: InteractionListenerBuilder<InteractionListenerType>[] = [
         new InteractionListenerBuilder()
             .setType(InteractionListenerType.Autocomplete)
             .setFilter(interaction => interaction.commandName === 'add-status-message')
@@ -42,7 +42,6 @@ export class StatusMessage extends SlashCommandModule {
                         .splice(0, 25)
                 );
             })
-            .toJSON()
     ];
 
     public async execute(data: SlashCommand.ExecuteData): Promise<void> {
