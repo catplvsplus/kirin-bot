@@ -7,12 +7,14 @@ import { ServerConfig } from '../utils/_ServerConfig.js';
 import type { Logger } from '@prtty/print';
 import { stripVTControlCharacters } from 'node:util';
 import { GlobalConfig } from '../utils/_GlobalConfig.js';
+import { WebhookManager } from '../utils/_WebhookManager.js';
 
 export class KirinClient extends BaseModule {
     public root: string = path.join(path.dirname(fileURLToPath(import.meta.url)), '../../servers');
     public kirin: ServerManager = new ServerManager({ root: this.root });
     public logger: Logger = useLogger().clone({ label: 'Kirin' });
 
+    public webhooks: WebhookManager = new WebhookManager();
     public configurations: Collection<string, ServerConfig> = new Collection();
     public config: GlobalConfig = new GlobalConfig(path.join(this.root, 'kirin.global.yml'));
 
@@ -140,8 +142,23 @@ export class KirinClient extends BaseModule {
                 await server.ping.ping().catch(() => null);
             }
 
+            const cleanMessage = stripVTControlCharacters(message);
+
             for (const channel of channels) {
-                await channel.send(stripVTControlCharacters(message)).catch(() => null);
+                if (channel.isDMBased() || channel.isThread()) {
+                    continue;
+                }
+
+                const webhook = await this.webhooks.resolveWebhook(channel);
+
+                if (webhook) {
+                    await webhook.send({
+                        username: server.name,
+                        content: cleanMessage
+                    });
+                } else {
+                    await channel.send(cleanMessage);
+                }
             }
         };
 
