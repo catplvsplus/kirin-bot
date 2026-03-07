@@ -62,6 +62,7 @@ Once the bot is running, you can use the following commands in your Discord serv
 - `/log-channel` Manage a server's log channels.
 - `/add-status-message` Add a server status message to a channel.
 - `/reload` Reloads the server and global configurations.
+- `/send` Send a message to a channel.
 
 ## Configuration
 
