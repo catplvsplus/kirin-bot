@@ -5,7 +5,7 @@ import { ServerSetup } from '../utils/_ServerSetup.js';
 import { Colors, inlineCode, InteractionContextType, MessageFlags, PermissionFlagsBits } from 'discord.js';
 import { Container, Heading, LineBreak, SubText, TextDisplay } from '@reciple/jsx';
 
-export class Configure extends SlashCommandModule {
+export class ConfigureCommand extends SlashCommandModule {
     public data = new SlashCommandBuilder()
         .setName('configure')
         .setDescription('Configure a server.')
@@ -117,4 +117,4 @@ export class Configure extends SlashCommandModule {
     }
 }
 
-export default new Configure();
+export default new ConfigureCommand();

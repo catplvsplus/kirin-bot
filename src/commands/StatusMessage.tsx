@@ -4,7 +4,7 @@ import { GlobalConfig } from '../utils/_GlobalConfig.js';
 import KirinClient from '../kirin/KirinClient.js';
 import { InteractionListenerBuilder, InteractionListenerType } from '@reciple/modules';
 
-export class StatusMessage extends SlashCommandModule {
+export class StatusMessageCommand extends SlashCommandModule {
     public data = new SlashCommandBuilder()
         .setName('add-status-message')
         .setDescription('Add a server status message.')
@@ -92,4 +92,4 @@ export class StatusMessage extends SlashCommandModule {
     }
 }
 
-export default new StatusMessage();
+export default new StatusMessageCommand();
