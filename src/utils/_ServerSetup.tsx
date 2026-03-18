@@ -5,6 +5,7 @@ import KirinClient from '../kirin/KirinClient.js';
 import path from 'node:path';
 import { mkdir, stat } from 'node:fs/promises';
 import { createWriteStream } from 'node:fs';
+import { parse as parseEnv } from '@dotenvx/dotenvx';
 import z from 'zod';
 
 export class ServerSetup {
@@ -219,12 +220,7 @@ export class ServerSetup {
         this.data.address = serverAddress;
 
         if (ServerSetup.isEnvContent(env)) {
-            this.data.env = {};
-
-            for (const line of env.split('\n')) {
-                const [key, value] = line.split('=');
-                this.data.env[key] = ServerSetup.stripQuotes(value);
-            }
+            this.data.env = parseEnv(env);
         } else {
             this.data.env = env || {};
         }
