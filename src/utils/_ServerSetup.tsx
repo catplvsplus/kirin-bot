@@ -377,7 +377,7 @@ export namespace ServerSetup {
     }
 
     export function isEnvContent(content: string): boolean {
-        return content.split('\n').every(line => line.includes('='));
+        return content.split('\n').every(line => line.includes('=') || line.startsWith('#') || !line.trim());
     }
 
     export function stripQuotes(content: string): string {
