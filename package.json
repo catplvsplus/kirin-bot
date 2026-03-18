@@ -16,7 +16,6 @@
     "@reciple/utils": "^10.0.2",
     "discord.js": "^14.25.1",
     "github-slugger": "^2.0.0",
-    "kirin": "^0.2.6",
     "reciple": "^10.0.32",
     "tinyexec": "^1.0.2",
     "yaml": "^2.8.2",
