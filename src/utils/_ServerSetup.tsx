@@ -7,6 +7,7 @@ import { mkdir, stat } from 'node:fs/promises';
 import { createWriteStream } from 'node:fs';
 import { parse as parseEnv } from '@dotenvx/dotenvx';
 import z from 'zod';
+import { DeferredPromise } from '@reciple/utils';
 
 export class ServerSetup {
     public interaction: RepliableInteraction;
@@ -36,8 +37,7 @@ export class ServerSetup {
             time: 1000 * 60 * 5
         });
 
-        let handleConfirm: (value: Server.Data|null) => void;
-        let promise = new Promise<Server.Data|null>(resolve => handleConfirm = resolve);
+        const confirmPromise = new DeferredPromise<Server.Data|null>();
 
         componentCollector.on('collect', async interaction => {
             const id = interaction.customId as 'cancel'|'finish'|'name'|'setup-software'|'ping-interval'|'toggle-persist';
@@ -79,7 +79,7 @@ export class ServerSetup {
                 case 'cancel':
                     await interaction.deferUpdate();
                     componentCollector.stop();
-                    handleConfirm(null);
+                    confirmPromise.resolve(null);
                     break;
                 case 'toggle-persist':
                     this.data.persist = !this.data.persist;
@@ -90,7 +90,7 @@ export class ServerSetup {
                 case 'finish':
                     if (this.isComplete) {
                         componentCollector.stop();
-                        handleConfirm(this.data as Server.Data);
+                        confirmPromise.resolve(this.data as Server.Data);
                         break;
                     }
 
@@ -108,7 +108,7 @@ export class ServerSetup {
             }));
         });
 
-        return promise;
+        return confirmPromise;
     }
 
     public async apply(): Promise<Server> {

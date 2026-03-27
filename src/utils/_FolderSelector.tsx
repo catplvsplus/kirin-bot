@@ -1,4 +1,5 @@
 import { ActionRow, Button, Container, Heading, Label, Modal, Section, Separator, StringSelectMenu, StringSelectMenuOption, SubText, TextDisplay, TextInput } from '@reciple/jsx';
+import { DeferredPromise } from '@reciple/utils';
 import { ButtonStyle, ComponentType, MessageFlags, TextInputStyle, type InteractionEditReplyOptions, type RepliableInteraction } from 'discord.js';
 import { mkdir, readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
@@ -44,8 +45,7 @@ export class FolderSelector {
             time: 1000 * 60 * 5
         });
 
-        let handleConfirm: (value: string|null) => void;
-        let promise = new Promise<string|null>(resolve => handleConfirm = resolve);
+        const confirmPromise = new DeferredPromise<string|null>();
 
         componentCollector.on('collect', async interaction => {
             const id = interaction.customId as 'new-folder'|`open:${number}`|'set-page'|'cancel'|'confirm';
@@ -54,12 +54,12 @@ export class FolderSelector {
                 case 'cancel':
                     await interaction.deferUpdate();
                     componentCollector.stop();
-                    handleConfirm(null);
+                    confirmPromise.resolve(null);
                     break;
                 case 'confirm':
                     await interaction.deferUpdate();
                     componentCollector.stop();
-                    handleConfirm(this.cwd);
+                    confirmPromise.resolve(this.cwd);
                     break;
                 case 'new-folder':
                     await interaction.showModal(
@@ -120,7 +120,7 @@ export class FolderSelector {
             }));
         })
 
-        return promise;
+        return confirmPromise;
     }
 
     public async chdir(dir: string): Promise<void> {
